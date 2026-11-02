@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Solubility Lab</title>
+<style>
+:root{--page:#0c0d10;--card:#14161b;--card2:#1b1e25;--ink:#e8e8ea;--text:#b4b6bd;--mute:#767a85;--line:#2c3039;--edge:#3d424d;
+--top:#2a2e37;--left:#1d2027;--right:#171a20;--glass:#9ec5f4;--water:#3987e5;--hex:#a8a29e;--na:#9085e9;--cl:#199e70;--o:#e66767;--h:#f0efec;--c:#8a8f99;--sug:#d95926;--oil:#c98500;--iod:#d55181;--heat:#ff7a3d;--ok:#1baf7a;--warn:#eda100;--bad:#e66767}
+@media (prefers-color-scheme:light){:root{--page:#eef0f3;--card:#fbfbfa;--card2:#f3f4f6;--ink:#18181a;--text:#45474d;--mute:#80838b;--line:#dcdde1;--edge:#b9bcc4;
+--top:#ffffff;--left:#e4e6ea;--right:#d3d6dc;--glass:#256abf;--water:#2a78d6;--hex:#78716c;--na:#6250d6;--cl:#1baf7a;--o:#e34948;--h:#ffffff;--c:#5b606b;--sug:#eb6834;--oil:#eda100;--iod:#d55181;--heat:#eb6834}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1040px;margin:auto;padding:20px 16px 60px}
+h1{color:var(--ink);font-size:clamp(26px,4vw,38px);margin:8px 0 4px;letter-spacing:-.02em}
+h2{color:var(--ink);font-size:22px;margin:40px 0 10px}
+h3{color:var(--ink);font-size:16px;margin:0 0 4px}
+.lead{max-width:720px;margin:0 0 18px}
+b{color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;position:relative}
+.lab{display:grid;grid-template-columns:1fr;gap:12px}
+.corner{font:11px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);display:flex;justify-content:space-between}
+svg{display:block;width:100%;height:auto}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:6px}
+.group{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.group>span{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;font-size:14px;color:var(--text);background:transparent;border:1px solid var(--edge);border-radius:999px;padding:4px 11px;cursor:pointer;transition:.15s}
+button:hover{border-color:var(--ink);color:var(--ink)}
+button[aria-pressed=true]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+button:disabled{opacity:.35;cursor:not-allowed}
+button.act{border-radius:8px}
+input[type=range]{width:100%;accent-color:var(--heat)}
+.val{font:600 15px ui-monospace,Menlo,monospace;color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}
+.stat{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.stat small{display:block;font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+.stat strong{font:600 22px ui-monospace,Menlo,monospace;color:var(--ink)}
+.state{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink)}
+.state i{width:10px;height:10px;border-radius:50%;display:inline-block}
+#say{margin-top:10px;padding:10px 12px;border-left:3px solid var(--heat);background:var(--card2);border-radius:0 8px 8px 0;min-height:48px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.tile svg{width:64px;height:64px;margin-bottom:6px}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid var(--edge);color:var(--mute);margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+th{color:var(--mute);font-weight:500;font-size:13px;text-transform:uppercase;letter-spacing:.05em}
+.yes{color:var(--ok);font-weight:600}.no{color:var(--bad);font-weight:600}
+#tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--card);font:12px ui-monospace,monospace;padding:4px 8px;border-radius:6px;opacity:0;transition:opacity .1s}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body><main>
+<h1>Solubility Lab</h1>
+<p class="lead">A <b>solution</b> is a mix where one thing spreads out evenly inside another. The <b>solute</b> is the thing that dissolves. The <b>solvent</b> is the thing it dissolves in. <b>Solute + solvent = solution.</b> Pick a solvent and a solute, change the heat, and watch the particles.</p>
+
+<div class="card lab">
+  <div class="corner"><span>Fig 1 · Lab bench</span><span id="title">Table salt in water</span></div>
+  <svg id="bench" viewBox="0 0 960 470" role="img" aria-label="A lab bench: a hot plate with a beaker and a thermometer, and a microscope screen that shows the particles inside the beaker.">
+    <defs>
+      <radialGradient id="glow"><stop offset="0" stop-color="var(--heat)" stop-opacity=".9"/><stop offset="1" stop-color="var(--heat)" stop-opacity="0"/></radialGradient>
+      <linearGradient id="glassG" x1="0" x2="1"><stop offset="0" stop-color="var(--glass)" stop-opacity=".18"/><stop offset=".25" stop-color="var(--glass)" stop-opacity=".04"/><stop offset=".8" stop-color="var(--glass)" stop-opacity=".02"/><stop offset="1" stop-color="var(--glass)" stop-opacity=".14"/></linearGradient>
+      <clipPath id="beakerClip"><path d="M215 170 V372 A75 24 0 0 0 365 372 V170 Z"/></clipPath>
+    </defs>
+    <!-- bench top -->
+    <polygon points="20,380 330,250 940,350 630,470" fill="var(--top)" stroke="var(--edge)"/>
+    <polygon points="20,380 630,470 630,478 20,388" fill="var(--left)"/>
+    <g id="ruler" stroke="var(--edge)"></g>
+    <!-- monitor stand + monitor -->
+    <polygon points="660,330 720,320 760,330 700,342" fill="var(--right)" stroke="var(--edge)"/>
+    <rect x="700" y="250" width="16" height="80" fill="var(--left)" stroke="var(--edge)"/>
+    <polygon points="520,40 920,60 920,300 520,280" fill="var(--left)" stroke="var(--edge)"/>
+    <polygon points="920,60 936,52 936,292 920,300" fill="var(--right)" stroke="var(--edge)"/>
+    <polygon points="520,40 536,32 936,52 920,60" fill="var(--top)" stroke="var(--edge)"/>
+    <foreignObject x="534" y="54" width="372" height="214"><canvas id="sim" width="744" height="428" style="width:372px;height:214px;border-radius:6px;display:block"></canvas></foreignObject>
+    <circle cx="900" cy="288" r="3" fill="var(--ok)" id="led"/>
+    <text x="536" y="294" fill="var(--mute)" font-size="10" font-family="ui-monospace,monospace">PARTICLE VIEW · ZOOM ×100,000,000</text>
+    <!-- cable probe -> monitor -->
+    <path d="M332 96 C 340 40, 460 30, 520 120" fill="none" stroke="var(--edge)" stroke-width="3"/>
+    <circle cx="520" cy="120" r="4" fill="var(--edge)"/>
+    <!-- hot plate -->
+    <ellipse cx="290" cy="440" rx="190" ry="26" fill="#000" opacity=".25"/>
+    <polygon points="140,380 290,340 440,380 290,420" fill="var(--top)" stroke="var(--edge)"/>
+    <polygon points="140,380 290,420 290,450 140,410" fill="var(--left)" stroke="var(--edge)"/>
+    <polygon points="290,420 440,380 440,410 290,450" fill="var(--right)" stroke="var(--edge)"/>
+    <ellipse cx="290" cy="378" rx="96" ry="28" fill="var(--card2)" stroke="var(--edge)"/>
+    <ellipse id="heatGlow" cx="290" cy="378" rx="110" ry="36" fill="url(#glow)" opacity="0"/>
+    <g id="coils" fill="none" stroke="var(--heat)" stroke-width="1.5" opacity="0"><ellipse cx="290" cy="378" rx="80" ry="23"/><ellipse cx="290" cy="378" rx="60" ry="17"/><ellipse cx="290" cy="378" rx="40" ry="11"/></g>
+    <g transform="translate(180 418)"><ellipse rx="11" ry="9" fill="var(--card2)" stroke="var(--edge)"/><line id="knobHeat" x1="0" y1="0" x2="0" y2="-8" stroke="var(--heat)" stroke-width="2" stroke-linecap="round"/></g>
+    <g transform="translate(220 428)"><ellipse rx="11" ry="9" fill="var(--card2)" stroke="var(--edge)"/><line id="knobStir" x1="0" y1="0" x2="0" y2="-8" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/></g>
+    <rect x="320" y="408" width="70" height="22" rx="3" fill="#000" stroke="var(--edge)" transform="skewY(-15) translate(0 92)"/>
+    <text id="lcd" x="327" y="424" fill="var(--heat)" font-size="13" font-family="ui-monospace,monospace" transform="skewY(-15) translate(0 92)">20°C</text>
+    <!-- beaker -->
+    <g clip-path="url(#beakerClip)">
+      <rect id="liquid" x="200" y="210" width="180" height="200" fill="var(--water)" opacity=".22"/>
+      <rect id="oilLayer" x="200" y="210" width="180" height="0" fill="var(--oil)" opacity=".5"/>
+      <rect id="gasSpace" x="200" y="0" width="180" height="210" fill="none"/>
+      <g id="bubbles" fill="none" stroke="var(--glass)" stroke-width="1.2"></g>
+      <g id="crystals"></g>
+      <g id="drops"></g>
+    </g>
+    <ellipse id="surface" cx="290" cy="210" rx="74" ry="22" fill="var(--water)" opacity=".28" stroke="var(--glass)" stroke-opacity=".6"/>
+    <g id="stir"><rect x="-22" y="-4" width="44" height="8" rx="4" fill="var(--ink)" opacity=".85"/></g>
+    <path d="M215 170 V372 A75 24 0 0 0 365 372 V170" fill="url(#glassG)" stroke="var(--glass)" stroke-opacity=".8" stroke-width="1.6"/>
+    <ellipse cx="290" cy="170" rx="75" ry="24" fill="none" stroke="var(--glass)" stroke-opacity=".9" stroke-width="1.6"/>
+    <path d="M218 158 l-8 -8" stroke="var(--glass)" stroke-width="1.6"/>
+    <g id="marks" stroke="var(--glass)" stroke-opacity=".7" font-size="9" fill="var(--glass)" font-family="ui-monospace,monospace"></g>
+    <line x1="354" y1="190" x2="354" y2="340" stroke="#fff" stroke-opacity=".25" stroke-width="4" stroke-linecap="round"/>
+    <!-- thermometer -->
+    <rect x="323" y="70" width="14" height="300" rx="7" fill="var(--card2)" stroke="var(--edge)"/>
+    <circle cx="330" cy="372" r="11" fill="var(--bad)"/>
+    <rect id="mercury" x="327" y="200" width="6" height="170" rx="3" fill="var(--bad)"/>
+    <g id="tticks" stroke="var(--mute)"></g>
+    <g id="steam" fill="none" stroke="var(--mute)" stroke-width="2" stroke-linecap="round" opacity="0"><path d="M255 150 q-10 -20 0 -40 q10 -20 0 -40"/><path d="M290 140 q-10 -20 0 -40 q10 -20 0 -40"/></g>
+    <!-- shelf with bottles -->
+    <g id="shelf"></g>
+  </svg>
+
+  <div class="controls">
+    <div class="group"><span>1 · Solvent (dissolves things)</span><div class="chips" id="solvents"></div></div>
+    <div class="group"><span>2 · Solute (gets dissolved)</span><div class="chips" id="solutes"></div></div>
+    <div class="group"><span>3 · Temperature</span><input id="temp" type="range" min="0" max="100" value="20" aria-label="Temperature in degrees Celsius"><div class="val" id="tempV">20 °C</div></div>
+    <div class="group"><span>4 · Amount added (in 100 g solvent)</span><input id="amt" type="range" min="0" max="60" step="1" value="20" aria-label="Grams of solute added"><div class="val" id="amtV">20 g</div></div>
+    <div class="group"><span>5 · Stirring</span><div class="chips"><button id="stir0" aria-pressed="true">Off</button><button id="stir1">Slow</button><button id="stir2">Fast</button></div></div>
+    <div class="group"><span>Demos</span><div class="chips"><button class="act" id="demoLike">Like dissolves like</button><button class="act" id="demoSuper">Supersaturated</button><button class="act" id="seed" disabled>Drop a seed crystal</button></div></div>
+  </div>
+  <div class="stats">
+    <div class="stat"><small>Can dissolve</small><strong id="sCap">36.0 g</strong></div>
+    <div class="stat"><small>Dissolved now</small><strong id="sDis">0 g</strong></div>
+    <div class="stat"><small>Not dissolved</small><strong id="sLeft">0 g</strong></div>
+    <div class="stat"><small>Solution is</small><div class="state" id="sState"><i></i><span>unsaturated</span></div></div>
+  </div>
+  <div id="say" aria-live="polite"></div>
+</div>
+
+<h2>The solubility curve</h2>
+<p class="lead">Solubility is <b>how much solute can dissolve</b> in 100 g of solvent at one temperature. The line shows the limit. <b>Below the line</b> = unsaturated (more can dissolve). <b>On the line</b> = saturated (full). <b>Above the line</b> = supersaturated (too much, not stable) or solid left at the bottom.</p>
+<div class="card" id="chartCard">
+  <div class="corner"><span>Fig 2 · Live curve</span><span id="chartTitle">NaCl in water</span></div>
+  <svg id="chart" viewBox="0 0 720 340" role="img" aria-label="Solubility curve of the selected solute"></svg>
+  <div id="tip"></div>
+</div>
+
+<h2>Types of solutions</h2>
+<p class="lead">A solution can be a gas, a liquid or a solid. The <b>solvent</b> is the part you have the most of, and it gives the solution its state.</p>
+<div class="grid" id="types"></div>
+
+<h2>How full is a solution?</h2>
+<div class="grid">
+  <div class="tile"><span class="tag" style="color:var(--ok)">Unsaturated</span><h3>Room for more</h3>It has less solute than it can hold. If you add more, it dissolves.</div>
+  <div class="tile"><span class="tag" style="color:var(--warn)">Saturated</span><h3>Full</h3>It holds the most it can at this temperature. Extra solute stays at the bottom. Particles still leave and join the crystal at the same speed (a <b>dynamic equilibrium</b>).</div>
+  <div class="tile"><span class="tag" style="color:var(--bad)">Supersaturated</span><h3>Too full</h3>It holds more than the limit. You make it by heating, dissolving, then cooling very slowly. One small crystal makes the extra solute come out fast.</div>
+  <div class="tile"><span class="tag">Dilute vs concentrated</span><h3>A little or a lot</h3><b>Dilute</b> = a little solute in a lot of solvent. <b>Concentrated</b> = a lot of solute. These words compare; they are not exact.</div>
+</div>
+
+<h2>Temperature and pressure</h2>
+<div class="grid">
+  <div class="tile"><span class="tag">Solids in water</span><h3>Hot = usually more</h3>Most solids (sugar, KNO₃) dissolve more when the water is hot. Hot particles move fast and hit the crystal harder. Salt changes only a little. A few solids, like Ce₂(SO₄)₃, dissolve <b>less</b> when hot.</div>
+  <div class="tile"><span class="tag">Gases in water</span><h3>Hot = less</h3>Gases like CO₂ escape when the water is hot. That is why warm soda goes flat faster than cold soda.</div>
+  <div class="tile"><span class="tag">Pressure</span><h3>Only for gases</h3>More pressure pushes more gas into the liquid. A closed soda bottle has high pressure. Open it, the pressure drops, and bubbles come out.</div>
+</div>
+
+<h2>Like dissolves like</h2>
+<p class="lead">Water is <b>polar</b>: the oxygen side is a little negative (δ−) and the hydrogen side is a little positive (δ+). Polar solvents pull on polar or charged particles. <b>Nonpolar</b> solvents (hexane, oil, gasoline) have no charged sides, so they mix with other nonpolar things.</p>
+<div class="card"><table>
+  <thead><tr><th>Solute</th><th>Type</th><th>In water (polar)</th><th>In hexane (nonpolar)</th></tr></thead>
+  <tbody>
+  <tr><td>Table salt, NaCl</td><td>Ionic (charged)</td><td class="yes">Dissolves</td><td class="no">No</td></tr>
+  <tr><td>Sugar</td><td>Polar</td><td class="yes">Dissolves</td><td class="no">No</td></tr>
+  <tr><td>Cooking oil</td><td>Nonpolar</td><td class="no">No, it floats</td><td class="yes">Mixes</td></tr>
+  <tr><td>Iodine, I₂</td><td>Nonpolar</td><td class="no">Very little (brown)</td><td class="yes">Dissolves (purple)</td></tr>
+  </tbody></table></div>
+
+<h2>What makes it dissolve faster?</h2>
+<div class="grid">
+  <div class="tile"><h3>🥄 Stirring</h3>Brings fresh solvent to the crystal.</div>
+  <div class="tile"><h3>🔥 Heat</h3>Particles move faster and hit harder.</div>
+  <div class="tile"><h3>🧂 Small pieces</h3>Powder has more surface than a big lump.</div>
+  <div class="tile"><h3>⚠️ Remember</h3>Stirring and small pieces change the <b>speed</b>, not the <b>amount</b>. Only temperature (and pressure for gases) changes how much can dissolve.</div>
+</div>
+</main>
+<script>
+// ---------- model (g per 100 g solvent, every 10 °C) ----------
+const SOLVENTS={water:{name:"Water",f:"H₂O",polar:true,max:100,tint:"--water"},hexane:{name:"Hexane",f:"C₆H₁₄",polar:false,max:65,tint:"--hex"}};
+const SOLUTES={
+ salt:{name:"Table salt",f:"NaCl",kind:"ionic",max:60,step:1,start:20,w:[35.7,35.8,35.9,36.1,36.4,37,37.3,37.8,38.4,39,39.8],h:0},
+ kno3:{name:"Potassium nitrate",f:"KNO₃",kind:"ionic",max:250,step:5,start:60,w:[13.3,20.9,31.6,45.8,63.9,85.5,110,138,169,202,246],h:0},
+ sugar:{name:"Sugar",f:"C₁₂H₂₂O₁₁",kind:"polar",max:500,step:10,start:150,w:[179,190,204,219,238,260,287,320,362,415,487],h:0},
+ oil:{name:"Cooking oil",f:"oil",kind:"oil",max:40,step:1,start:15,w:0,h:Infinity},
+ iodine:{name:"Iodine",f:"I₂",kind:"iodine",max:6,step:.1,start:2,w:[.014,.02,.029,.039,.052,.078,.1,.13,.17,.22,.28],h:[.62,.86,1.13,1.48,1.95,2.55,3.3,3.3,3.3,3.3,3.3]},
+ co2:{name:"Carbon dioxide",f:"CO₂",kind:"gas",max:.4,step:.01,start:.2,w:[.335,.232,.169,.126,.097,.076,.058,.045,.035,.024,.012],h:null}};
+const sol=(k,v,t)=>{const tb=SOLUTES[k][v==="water"?"w":"h"];if(tb===null)return null;if(typeof tb==="number")return tb;const a=Math.max(0,Math.min(100,t))/10,i=Math.min(9,Math.floor(a)),f=a-i;return tb[i]+(tb[i+1]-tb[i])*f};
+const fmt=(g)=>g===Infinity?"no limit":g===0?"0 g":g<1?g.toFixed(3)+" g":g<10?g.toFixed(1)+" g":Math.round(g)+" g";
+// ---------- state ----------
+const S={solvent:"water",solute:"salt",set:20,T:20,A:20,D:0,stir:0,noSeed:false,clock:0};
+const $=(s)=>document.querySelector(s),NS="http://www.w3.org/2000/svg";
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.append(e);return e};
+const css=(v)=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+// ---------- static decoration ----------
+for(let i=0;i<=24;i++){const x=40+i*24,y=392+i*3.6;el("line",{x1:x,y1:y,x2:x+(i%5?3:6),y2:y-(i%5?2:4)},$("#ruler"))}
+[[250,"100 mL"],[290,"75"],[330,"50"]].forEach(([y,t])=>{el("line",{x1:218,y1:y,x2:234,y2:y+3},$("#marks"));const tx=el("text",{x:238,y:y+7},$("#marks"));tx.textContent=t});
+for(let t=0;t<=100;t+=10){const y=360-t*2.6;el("line",{x1:337,y1:y,x2:t%50?342:346,y2:y},$("#tticks"))}
+// shelf of bottles (front)
+const shelfItems=[["water","H₂O",70,330],["hexane","C₆H₁₄",110,318]];
+shelfItems.forEach(([id,f,x,y])=>{const g=el("g",{transform:`translate(${x} ${y})`,style:"cursor:pointer","data-solvent":id},$("#shelf"));
+ el("ellipse",{cx:0,cy:42,rx:15,ry:5,fill:"#000",opacity:.25},g);el("rect",{x:-14,y:0,width:28,height:42,rx:6,fill:"var(--left)",stroke:"var(--edge)"},g);
+ el("rect",{x:-6,y:-12,width:12,height:13,fill:"var(--right)",stroke:"var(--edge)"},g);el("rect",{x:-10,y:12,width:20,height:16,rx:2,fill:"var(--card2)",stroke:"var(--edge)"},g);
+ const t=el("text",{x:0,y:23,"text-anchor":"middle","font-size":7,fill:"var(--text)","font-family":"ui-monospace,monospace"},g);t.textContent=f;g.onclick=()=>pickSolvent(id)});
+// ---------- controls ----------
+function chips(box,items,fn){for(const k in items){const b=document.createElement("button");b.textContent=items[k].name+(items[k].f&&items[k].f!=="oil"?" ("+items[k].f+")":"");b.dataset.k=k;b.onclick=()=>fn(k);$(box).append(b)}}
+chips("#solvents",SOLVENTS,(k)=>pickSolvent(k));chips("#solutes",SOLUTES,(k)=>pickSolute(k));
+function sync(){document.querySelectorAll("#solvents button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===S.solvent));
+ document.querySelectorAll("#solutes button").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.k===S.solute);b.disabled=sol(b.dataset.k,S.solvent)===null});
+ const u=SOLUTES[S.solute],t=$("#temp"),a=$("#amt");t.max=SOLVENTS[S.solvent].max;if(S.set>t.max)S.set=+t.max;t.value=S.set;
+ a.max=u.max;a.step=u.step;a.value=S.A;$("#amtV").textContent=fmt(S.A);$("#tempV").textContent=Math.round(S.set)+" °C"+(S.solvent==="hexane"?"  (hexane boils at 69 °C)":"");
+ $("#title").textContent=`${u.name} in ${SOLVENTS[S.solvent].name.toLowerCase()}`;$("#chartTitle").textContent=`${u.f} in ${SOLVENTS[S.solvent].name.toLowerCase()}`;drawChart()}
+function pickSolvent(k){if(S.solute==="co2"&&k==="hexane")S.solute="salt";S.solvent=k;S.D=0;S.noSeed=false;$("#seed").disabled=true;resetSim();sync()}
+function pickSolute(k){S.solute=k;S.A=SOLUTES[k].start;S.D=0;S.noSeed=false;$("#seed").disabled=true;resetSim();sync()}
+$("#temp").oninput=(e)=>{S.set=+e.target.value;sync()};
+$("#amt").oninput=(e)=>{S.A=+e.target.value;if(S.D>S.A)S.D=S.A;sync()};
+[0,1,2].forEach(i=>$("#stir"+i).onclick=()=>{S.stir=i;[0,1,2].forEach(j=>$("#stir"+j).setAttribute("aria-pressed",i===j))});
+// demos
+let demo=null;
+$("#demoLike").onclick=()=>{demo=[["water","salt"],["water","oil"],["hexane","oil"],["water","iodine"],["hexane","iodine"],["hexane","salt"]];demoStep()};
+function demoStep(){if(!demo||!demo.length){demo=null;return}const[v,u]=demo.shift();pickSolvent(v);pickSolute(u);setTimeout(demoStep,6500)}
+$("#demoSuper").onclick=()=>{demo=null;pickSolvent("water");pickSolute("kno3");S.A=100;S.set=65;sync();
+ setTimeout(()=>{S.noSeed=true;S.set=20;sync()},6000)};
+$("#seed").onclick=()=>{S.noSeed=false;$("#seed").disabled=true};
+// ---------- particle view ----------
+const cv=$("#sim"),cx=cv.getContext("2d"),W=372,H=214,SURF=46;cx.scale(2,2);
+let mols=[],parts=[];
+function resetSim(){const v=S.solvent;mols=[];for(let i=0;i<(v==="water"?60:26);i++)mols.push({x:Math.random()*W,y:SURF+Math.random()*(H-SURF),a:Math.random()*6.28,vx:0,vy:0});
+ parts=[];const n=28;for(let i=0;i<n;i++){const col=i%7,row=Math.floor(i/7);parts.push({i,hx:W/2-42+col*14,hy:H-12-row*13,x:W/2-42+col*14,y:H-12-row*13,free:false,vx:0,vy:0,a:Math.random()*6})}}
+resetSim();
+function mol(m,orient){const v=S.solvent;cx.save();cx.translate(m.x,m.y);cx.rotate(orient??m.a);
+ if(v==="water"){cx.fillStyle=css("--h");for(const s of[-1,1]){cx.beginPath();cx.arc(Math.cos(s*.91)*7,Math.sin(s*.91)*7,3.4,0,7);cx.fill()}cx.fillStyle=css("--o");cx.beginPath();cx.arc(0,0,5.6,0,7);cx.fill()}
+ else{cx.strokeStyle=css("--c");cx.lineWidth=2;cx.beginPath();for(let j=0;j<6;j++)cx.lineTo(-15+j*6,j%2?3:-3);cx.stroke();cx.fillStyle=css("--c");for(let j=0;j<6;j++){cx.beginPath();cx.arc(-15+j*6,j%2?3:-3,2.6,0,7);cx.fill()}}
+ cx.restore()}
+function solute(p){const k=SOLUTES[S.solute].kind;cx.save();cx.translate(p.x,p.y);cx.rotate(p.a);
+ if(k==="ionic"){const plus=p.i%2===0,r=plus?4.6:6.6;cx.fillStyle=css(plus?"--na":"--cl");cx.beginPath();cx.arc(0,0,r,0,7);cx.fill();cx.rotate(-p.a);cx.fillStyle="#fff";cx.font="bold 8px sans-serif";cx.textAlign="center";cx.textBaseline="middle";cx.fillText(plus?"+":"−",0,.5)}
+ else if(k==="polar"){cx.strokeStyle=css("--sug");cx.fillStyle=css("--sug");cx.lineWidth=2;cx.beginPath();for(let j=0;j<6;j++)cx.lineTo(Math.cos(j*1.047)*6,Math.sin(j*1.047)*6);cx.closePath();cx.globalAlpha=.35;cx.fill();cx.globalAlpha=1;cx.stroke()}
+ else if(k==="oil"){cx.strokeStyle=css("--oil");cx.lineWidth=3;cx.lineCap="round";cx.beginPath();for(let j=0;j<5;j++)cx.lineTo(-12+j*6,j%2?3:-3);cx.stroke()}
+ else if(k==="iodine"){cx.fillStyle=css("--iod");for(const s of[-1,1]){cx.beginPath();cx.arc(s*4,0,4.4,0,7);cx.fill()}}
+ else{cx.fillStyle=css("--o");for(const s of[-1,1]){cx.beginPath();cx.arc(s*7,0,3.6,0,7);cx.fill()}cx.fillStyle=css("--c");cx.beginPath();cx.arc(0,0,3.8,0,7);cx.fill()}
+ cx.restore()}
+function stepSim(dt){const u=SOLUTES[S.solute],k=u.kind,heat=.5+S.T/45,cap=sol(S.solute,S.solvent,S.T);
+ const nShow=Math.round(parts.length*Math.min(1,S.A/u.max)*(k==="gas"?1:1)),frac=S.A>0?S.D/S.A:0,nFree=Math.round(nShow*frac);
+ // background
+ cx.clearRect(0,0,W,H);cx.fillStyle=css("--page");cx.fillRect(0,0,W,H);
+ cx.fillStyle=css(SOLVENTS[S.solvent].tint);cx.globalAlpha=.10;cx.fillRect(0,SURF,W,H-SURF);cx.globalAlpha=1;
+ cx.strokeStyle=css("--glass");cx.globalAlpha=.5;cx.beginPath();for(let x=0;x<=W;x+=6)cx.lineTo(x,SURF+Math.sin(x/18+S.clock*2)*2);cx.stroke();cx.globalAlpha=1;
+ const oilLayer=k==="oil"&&S.solvent==="water";
+ // solute particles
+ parts.forEach((p,j)=>{p.show=j<nShow;if(!p.show)return;const want=j<nFree;
+  if(want&&!p.free){p.free=true;p.vx=(Math.random()-.5)*2;p.vy=-1-Math.random()}
+  if(!want&&p.free)p.free=false;
+  let hx=p.hx,hy=p.hy;if(oilLayer){hx=20+(j%9)*38;hy=SURF+8+Math.floor(j/9)*11}
+  if(k==="gas"&&!want){hx=10+(j*53)%(W-20);hy=8+((j*29)%30)}
+  if(p.free){p.vx+=(Math.random()-.5)*.6*heat;p.vy+=(Math.random()-.5)*.6*heat;p.vx*=.94;p.vy*=.94;p.x+=p.vx*(1+S.stir*.6);p.y+=p.vy*(1+S.stir*.6);
+   if(p.x<8||p.x>W-8)p.vx*=-1;if(p.y<SURF+8||p.y>H-8)p.vy*=-1;p.x=Math.max(8,Math.min(W-8,p.x));p.y=Math.max(SURF+8,Math.min(H-8,p.y));p.a+=.03}
+  else if(k==="gas"){p.x+=(hx-p.x)*.03+(Math.random()-.5)*3*heat;p.y+=(hy-p.y)*.03+(Math.random()-.5)*3*heat;p.a+=.1}
+  else{p.x+=(hx-p.x)*.08;p.y+=(hy-p.y)*.08;p.a+=((oilLayer?Math.sin(S.clock+j):0)-p.a)*.1;if(Math.random()<.02*heat)p.x+=(Math.random()-.5)}
+ });
+ // solvent molecules (hydration: water turns toward ions)
+ const free=parts.filter(p=>p.show&&p.free);
+ mols.forEach((m)=>{m.vx+=(Math.random()-.5)*.8*heat;m.vy+=(Math.random()-.5)*.8*heat;m.vx*=.9;m.vy*=.9;let ang=m.a;
+  if(S.solvent==="water"&&(k==="ionic"||k==="polar")){let best=null,bd=30;for(const p of free){const d=Math.hypot(p.x-m.x,p.y-m.y);if(d<bd){bd=d;best=p}}
+   if(best){const toward=Math.atan2(best.y-m.y,best.x-m.x),r=k==="ionic"?(best.i%2===0?13:15):14;m.vx+=(Math.cos(toward)*(bd-r))*.02;m.vy+=(Math.sin(toward)*(bd-r))*.02;
+    const target=k==="ionic"?(best.i%2===0?toward+Math.PI:toward):toward+Math.PI;let d=target-m.a;d=Math.atan2(Math.sin(d),Math.cos(d));m.a+=d*.15;ang=m.a}}
+  if(oilLayer&&m.y<SURF+30)m.vy+=.4;
+  m.x+=m.vx*(1+S.stir*.5);m.y+=m.vy*(1+S.stir*.5);m.a+=(Math.random()-.5)*.1;
+  if(m.x<0)m.x+=W;if(m.x>W)m.x-=W;m.y=Math.max(SURF+6,Math.min(H-6,m.y));mol(m,ang)});
+ parts.forEach(p=>{if(p.show)solute(p)});
+ // labels on screen
+ cx.fillStyle=css("--mute");cx.font="10px ui-monospace,monospace";cx.textAlign="left";
+ cx.fillText(`${SOLVENTS[S.solvent].name.toUpperCase()} ${SOLVENTS[S.solvent].polar?"(POLAR δ−/δ+)":"(NONPOLAR)"}  +  ${u.f}`,8,14);
+ cx.fillText(k==="gas"?"GAS ABOVE":"AIR",8,32)}
+// ---------- beaker / bench animation ----------
+const crystals=$("#crystals"),bubbles=$("#bubbles"),drops=$("#drops");let bubs=[];
+function drawBench(dt){const u=SOLUTES[S.solute],k=u.kind,left=Math.max(0,S.A-S.D),T=S.T;
+ $("#heatGlow").setAttribute("opacity",Math.min(1,T/100));$("#coils").setAttribute("opacity",Math.max(0,(T-25)/75));
+ $("#knobHeat").setAttribute("transform",`rotate(${-130+S.set*2.6})`);$("#knobStir").setAttribute("transform",`rotate(${-90+S.stir*90})`);
+ $("#lcd").textContent=Math.round(T)+"°C";$("#mercury").setAttribute("y",360-T*2.6);$("#mercury").setAttribute("height",12+T*2.6);
+ const boil=S.solvent==="water"?(T-80)/20:(T-50)/15;$("#steam").setAttribute("opacity",Math.max(0,Math.min(.8,boil)));
+ S.stirA=(S.stirA||0)+dt*[0,4,12][S.stir];$("#stir").setAttribute("transform",`translate(290 368) scale(${Math.abs(Math.cos(S.stirA))*.8+.2} .6)`);
+ // liquid tint
+ let tint=css(SOLVENTS[S.solvent].tint),op=.18;
+ if(k==="iodine"){const c=S.D/(S.solvent==="water"?.3:3.3);tint=S.solvent==="water"?"#a0522d":css("--iod");op=.15+Math.min(.6,c*.6)}
+ $("#liquid").setAttribute("fill",tint);$("#liquid").setAttribute("opacity",op);$("#surface").setAttribute("fill",tint);
+ const oilH=k==="oil"&&S.solvent==="water"?left*1.1:0;$("#oilLayer").setAttribute("y",186);$("#oilLayer").setAttribute("height",oilH?oilH+24:0);
+ // crystals at the bottom
+ const want=k==="oil"||k==="gas"?0:Math.min(90,Math.round(left/u.max*120+(left>0?2:0)));
+ while(crystals.childNodes.length<want){const i=crystals.childNodes.length,a=Math.random()*6.28,r=Math.sqrt(Math.random())*60;
+  el("rect",{x:290+Math.cos(a)*r-3,y:374+Math.sin(a)*r*.3-3-Math.random()*Math.min(18,i/5),width:5,height:5,transform:`rotate(45 ${290+Math.cos(a)*r} ${374+Math.sin(a)*r*.3})`,fill:k==="iodine"?css("--iod"):k==="polar"?"#f5f0e6":"#e8eef7",stroke:"var(--edge)","stroke-width":.5},crystals)}
+ while(crystals.childNodes.length>want)crystals.lastChild.remove();
+ // bubbles for gas
+ const rate=k==="gas"?left*60+(S.T>70&&S.solvent==="water"?2:0):(boil>0?boil*6:0);
+ if(Math.random()<rate*dt)bubs.push({x:230+Math.random()*120,y:370,r:2+Math.random()*3,e:el("circle",{},bubbles)});
+ bubs=bubs.filter(b=>{b.y-=dt*(60+b.r*10);b.x+=Math.sin(b.y/9)*.3;b.e.setAttribute("cx",b.x);b.e.setAttribute("cy",b.y);b.e.setAttribute("r",b.r);if(b.y<214){b.e.remove();return false}return true})}
+// ---------- chart ----------
+const C={x0:60,x1:690,y0:290,y1:24};
+function drawChart(){const g=$("#chart");g.innerHTML="";const u=SOLUTES[S.solute],v=S.solvent,tmax=SOLVENTS[v].max;
+ const top=Math.max(u.max,...[0,20,40,60,80,100].map(t=>{const c=sol(S.solute,v,t);return c===Infinity||c===null?0:c}));
+ const X=(t)=>C.x0+t/100*(C.x1-C.x0),Y=(g)=>C.y0-Math.min(g,top)/top*(C.y0-C.y1);g._X=X;g._Y=Y;
+ for(let i=0;i<=5;i++){const gv=top*i/5;el("line",{x1:C.x0,x2:C.x1,y1:Y(gv),y2:Y(gv),stroke:"var(--line)"},g);const t=el("text",{x:C.x0-8,y:Y(gv)+4,"text-anchor":"end","font-size":11,fill:"var(--mute)"},g);t.textContent=gv<1?gv.toFixed(2):Math.round(gv)}
+ for(let t=0;t<=100;t+=20){const tx=el("text",{x:X(t),y:C.y0+18,"text-anchor":"middle","font-size":11,fill:"var(--mute)"},g);tx.textContent=t+" °C"}
+ const yl=el("text",{x:14,y:C.y1+4,"font-size":11,fill:"var(--mute)"},g);yl.textContent="g / 100 g";
+ const cap=sol(S.solute,v,20);
+ if(cap===Infinity||cap===0){const t=el("text",{x:(C.x0+C.x1)/2,y:150,"text-anchor":"middle","font-size":18,fill:"var(--ink)"},g);t.textContent=cap===Infinity?"Mixes in any amount: no limit (like dissolves like)":"Almost nothing dissolves: they are not alike";
+  const t2=el("text",{x:(C.x0+C.x1)/2,y:176,"text-anchor":"middle","font-size":13,fill:"var(--mute)"},g);t2.textContent=SOLUTES[S.solute].name+" is "+(u.kind==="ionic"?"ionic":u.kind==="polar"?"polar":"nonpolar")+", "+SOLVENTS[v].name.toLowerCase()+" is "+(SOLVENTS[v].polar?"polar":"nonpolar");}
+ else{let d="",area=`M${X(0)} ${C.y0}`;for(let t=0;t<=tmax;t+=2){const p=`${X(t)} ${Y(sol(S.solute,v,t))}`;d+=(t?"L":"M")+p;area+="L"+p}
+  area+=`L${X(tmax)} ${C.y0}Z`;el("path",{d:area,fill:"var(--ok)",opacity:.08},g);el("path",{d,fill:"none",stroke:"var(--water)","stroke-width":2.5},g);
+  const a=el("text",{x:X(tmax*.75),y:C.y0-10,"font-size":12,fill:"var(--ok)","text-anchor":"middle"},g);a.textContent="unsaturated (below the line)";
+  const b=el("text",{x:X(8),y:C.y1+14,"font-size":12,fill:"var(--bad)"},g);b.textContent="too much: solid at bottom or supersaturated";
+  if(tmax<100){el("rect",{x:X(tmax),y:C.y1,width:X(100)-X(tmax),height:C.y0-C.y1,fill:"var(--mute)",opacity:.1},g);const bt=el("text",{x:(X(tmax)+X(100))/2,y:150,"text-anchor":"middle","font-size":11,fill:"var(--mute)"},g);bt.textContent="boils"}}
+ el("line",{id:"cursor",x1:0,x2:0,y1:C.y1,y2:C.y0,stroke:"var(--heat)","stroke-dasharray":"3 3"},g);
+ el("circle",{id:"ptA",r:6,fill:"none",stroke:"var(--ink)","stroke-width":2},g);el("circle",{id:"ptD",r:5,fill:"var(--heat)"},g);
+ el("rect",{x:C.x0,y:C.y1,width:C.x1-C.x0,height:C.y0-C.y1,fill:"transparent",id:"hit"},g)}
+const tip=$("#tip");
+$("#chart").addEventListener("pointermove",(e)=>{const g=$("#chart"),r=g.getBoundingClientRect(),vx=(e.clientX-r.left)/r.width*720,t=Math.round((vx-C.x0)/(C.x1-C.x0)*100);
+ if(t<0||t>SOLVENTS[S.solvent].max){tip.style.opacity=0;return}const c=sol(S.solute,S.solvent,t);if(!c||c===Infinity){tip.style.opacity=0;return}
+ tip.textContent=`${t} °C → ${fmt(c)} can dissolve`;tip.style.opacity=1;tip.style.left=(e.clientX-$("#chartCard").getBoundingClientRect().left+12)+"px";tip.style.top=(e.clientY-$("#chartCard").getBoundingClientRect().top-30)+"px"});
+$("#chart").addEventListener("pointerleave",()=>tip.style.opacity=0);
+// ---------- explanations ----------
+function explain(cap,state){const u=SOLUTES[S.solute],v=SOLVENTS[S.solvent],k=u.kind;
+ if(S.noSeed&&state==="supersaturated")return"<b>Supersaturated!</b> We heated the water, dissolved 100 g of KNO₃, then cooled it slowly. Now it holds more than the limit. It is not stable. Press <b>Drop a seed crystal</b>.";
+ if(cap===0||(cap<.05&&k==="iodine"))return`<b>${u.name}</b> is ${k==="ionic"?"made of charged ions":k==="polar"?"polar":"nonpolar"}, but <b>${v.name.toLowerCase()}</b> is ${v.polar?"polar":"nonpolar"}. They are not alike, so the solvent cannot pull the particles apart. ${k==="oil"?"Oil is lighter than water, so it floats on top.":k==="iodine"?"Only a tiny bit dissolves: the water turns light brown.":"The crystal stays at the bottom."}`;
+ if(cap===Infinity)return`Oil and hexane are both <b>nonpolar</b>. Like dissolves like, so they mix in any amount. There is no saturation point.`;
+ if(k==="ionic")return`Water is polar. The <b>δ− oxygen</b> side turns to the <b>+ ions</b>, and the <b>δ+ hydrogen</b> side turns to the <b>− ions</b>. Water molecules surround each ion and pull it off the crystal. ${state==="saturated"?"The solution is <b>full</b>: ions leave and join the crystal at the same speed.":"More can still dissolve."}`;
+ if(k==="polar")return`Sugar is polar, like water. Water molecules stick to the sugar molecules and carry them away. ${S.T>50?"Hot water holds much more sugar.":"Try heating it: hot water holds much more sugar."}`;
+ if(k==="iodine")return`Iodine and hexane are both <b>nonpolar</b>, so iodine dissolves and makes a purple solution.`;
+ if(k==="gas")return`CO₂ gas dissolves a little in water. <b>Heat makes gases escape</b>: at ${Math.round(S.T)} °C only ${fmt(cap)} can stay. The rest bubbles out.`;return""}
+// ---------- main loop ----------
+let last=0,lastSay="";const still=matchMedia("(prefers-reduced-motion: reduce)");
+function tick(now){const dt=Math.min(.05,last?(now-last)/1000:.016);last=now;S.clock+=dt;
+ S.T+=(S.set-S.T)*(1-Math.exp(-dt/1.2));if(Math.abs(S.set-S.T)<.05)S.T=S.set;
+ const cap=sol(S.solute,S.solvent,S.T),u=SOLUTES[S.solute];let target=Math.min(S.A,cap);
+ if(S.noSeed&&S.D>target&&S.D>=S.A-1e-6)target=S.D;
+ const rate=.12*(1+S.T/40)*(1+1.4*S.stir)*(target<S.D?2.5:1);S.D+=(target-S.D)*(1-Math.exp(-dt*rate*(still.matches?50:1)));
+ if(Math.abs(target-S.D)<u.step*.02)S.D=target;
+ const state=cap===Infinity?"mixes":cap===0?"no":S.D>cap*1.02?"supersaturated":S.D>=cap*.98&&S.A>=cap?"saturated":"unsaturated";
+ if(S.noSeed&&state==="supersaturated")$("#seed").disabled=false;
+ $("#sCap").textContent=fmt(cap);$("#sDis").textContent=fmt(S.D);$("#sLeft").textContent=fmt(Math.max(0,S.A-S.D));
+ const colors={unsaturated:"--ok",saturated:"--warn",supersaturated:"--bad",mixes:"--ok",no:"--mute"},words={unsaturated:"unsaturated",saturated:"saturated",supersaturated:"supersaturated",mixes:"fully mixed",no:"not dissolving"};
+ $("#sState i").style.background=`var(${colors[state]})`;$("#sState span").textContent=words[state];
+ const say=explain(cap,state);if(say!==lastSay){$("#say").innerHTML=say;lastSay=say}
+ const g=$("#chart");if(g._X&&cap!==Infinity&&cap!==0){const X=g._X,Y=g._Y;$("#cursor").setAttribute("x1",X(S.T));$("#cursor").setAttribute("x2",X(S.T));$("#ptA").setAttribute("cx",X(S.T));$("#ptA").setAttribute("cy",Y(S.A));$("#ptD").setAttribute("cx",X(S.T));$("#ptD").setAttribute("cy",Y(S.D))}
+ drawBench(dt);stepSim(dt);requestAnimationFrame(tick)}
+// ---------- types of solutions ----------
+const TYPES=[["Gas in gas","Air","Oxygen in nitrogen","M32 10a14 14 0 1 1 0 34l0 14",["--water","--o"]],
+ ["Gas in liquid","Soda","CO₂ in water","M24 8h16v8l6 8v32h-28v-32l6-8z",["--glass","--glass"]],
+ ["Liquid in liquid","Vinegar","Acetic acid in water","M26 6h12v12l8 10v28h-28v-28l8-10z",["--warn","--warn"]],
+ ["Solid in liquid","Sea water","Salt in water","M14 20h36l-4 36h-28z",["--water","--cl"]],
+ ["Solid in solid","Brass","Zinc in copper (an alloy)","M10 28a10 10 0 1 1 20 0a10 10 0 1 1 -20 0M30 26h24v6h-4v6h-4v-6h-16z",["--warn","--oil"]],
+ ["Liquid in solid","Dental filling","Mercury in silver (amalgam)","M20 12c8-6 16-6 24 0c4 10-2 40-6 40c-3 0-3-14-6-14s-3 14-6 14c-4 0-10-30-6-40z",["--mute","--h"]]];
+TYPES.forEach(([t,ex,how,d,[c1,c2]])=>{const tile=document.createElement("div");tile.className="tile";
+ tile.innerHTML=`<svg viewBox="0 0 64 64" aria-hidden="true"><path d="${d}" fill="var(${c1})" fill-opacity=".25" stroke="var(${c1})" stroke-width="2"/><circle cx="26" cy="40" r="3" fill="var(${c2})"><animate attributeName="cy" values="44;30;44" dur="3s" repeatCount="indefinite"/></circle><circle cx="38" cy="34" r="2.4" fill="var(${c2})"><animate attributeName="cy" values="30;44;30" dur="2.4s" repeatCount="indefinite"/></circle></svg><span class="tag">${t}</span><h3>${ex}</h3>${how}`;$("#types").append(tile)});
+sync();requestAnimationFrame(tick);
+</script></body></html>
