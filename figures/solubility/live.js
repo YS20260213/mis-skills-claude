@@ -112,72 +112,113 @@ function benchFrame(dt, left) {
 // ---------- Fig 2: particle view ----------
 const cv = q("#sim"), cx = cv.getContext("2d"), VW = 500, VH = 340, SURF = 58;
 cx.scale(2, 2);
-let mols = [], parts = [];
+let mols = [], parts = [], fx = [], gasBubbles = [];
+const R_MOL = { water: 9, hexane: 15 };
 function resetSim() {
-  mols = []; const n = ST.v === "water" ? 70 : 30;
-  for (let i = 0; i < n; i++) mols.push({ x: Math.random() * VW, y: SURF + 10 + Math.random() * (VH - SURF - 20), a: Math.random() * 6.28, vx: 0, vy: 0 });
-  parts = []; const cols = 8;
-  for (let i = 0; i < 32; i++) { const col = i % cols, row = Math.floor(i / cols), hx = VW / 2 - 60 + col * 17 + (row % 2) * 0, hy = VH - 14 - row * 16;
-    parts.push({ i, hx, hy, x: hx, y: hy, free: false, vx: 0, vy: 0, a: Math.random() * 6, g: Math.random() * 6.28 }); }
+  mols = []; const n = ST.v === "water" ? 64 : 26;
+  for (let i = 0; i < n; i++) mols.push({ x: Math.random() * VW, y: SURF + 14 + Math.random() * (VH - SURF - 28), a: Math.random() * 6.28, va: 0, vx: 0, vy: 0 });
+  parts = []; fx = []; gasBubbles = []; const cols = 8;
+  for (let i = 0; i < 32; i++) { const col = i % cols, row = Math.floor(i / cols), hx = VW / 2 - 62 + col * 17.5 + (row % 2 ? 8.7 : 0), hy = VH - 14 - row * 15.5;
+    parts.push({ i, hx, hy, x: hx, y: hy, free: false, vx: 0, vy: 0, a: Math.random() * 6, ph: Math.random() * 6.28 }); }
 }
-function ball(x, y, r, col) { const g = cx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r); g.addColorStop(0, CV.dark ? "#ffffffcc" : "#ffffff"); g.addColorStop(0.35, col); g.addColorStop(1, col); cx.fillStyle = g; cx.beginPath(); cx.arc(x, y, r, 0, 6.283); cx.fill(); }
-function drawSolvent(m, ang) {
-  cx.save(); cx.translate(m.x, m.y); cx.rotate(ang);
-  if (ST.v === "water") { for (const s of [-1, 1]) { const hx = Math.cos(s * 0.91) * 8, hy = Math.sin(s * 0.91) * 8; cx.strokeStyle = CV.mute; cx.lineWidth = 1.4; cx.beginPath(); cx.moveTo(0, 0); cx.lineTo(hx, hy); cx.stroke(); ball(hx, hy, 3.6, CV["a-h"]); } ball(0, 0, 6.2, CV["a-o"]); }
-  else { cx.strokeStyle = CV["a-c"]; cx.lineWidth = 2; cx.beginPath(); for (let j = 0; j < 6; j++) cx.lineTo(-17.5 + j * 7, j % 2 ? 3.5 : -3.5); cx.stroke(); for (let j = 0; j < 6; j++) ball(-17.5 + j * 7, j % 2 ? 3.5 : -3.5, 3, CV["a-c"]); }
+const hexA = (c, a) => { if (!c.startsWith("#")) return c; const n = c.length === 4 ? c.replace(/#(.)(.)(.)/, "#$1$1$2$2$3$3") : c; return n.slice(0, 7) + Math.round(a * 255).toString(16).padStart(2, "0"); };
+function ball(x, y, r, col, glow = 0) {
+  if (glow) { const h = cx.createRadialGradient(x, y, r * 0.6, x, y, r * 2.6); h.addColorStop(0, hexA(col, 0.35 * glow)); h.addColorStop(1, hexA(col, 0)); cx.fillStyle = h; cx.beginPath(); cx.arc(x, y, r * 2.6, 0, 6.283); cx.fill(); }
+  cx.fillStyle = CV.dark ? "#00000055" : "#1b2a5a22"; cx.beginPath(); cx.ellipse(x + r * 0.25, y + r * 0.55, r * 0.95, r * 0.55, 0, 0, 6.283); cx.fill();
+  const g = cx.createRadialGradient(x - r * 0.4, y - r * 0.45, r * 0.08, x, y, r * 1.05);
+  g.addColorStop(0, "#ffffff"); g.addColorStop(0.28, col); g.addColorStop(1, hexA(col, 1)); cx.fillStyle = g; cx.beginPath(); cx.arc(x, y, r, 0, 6.283); cx.fill();
+  cx.fillStyle = "#ffffff99"; cx.beginPath(); cx.ellipse(x - r * 0.35, y - r * 0.45, r * 0.28, r * 0.18, -0.6, 0, 6.283); cx.fill();
+}
+const hPos = (m) => [-1, 1].map((s) => [m.x + Math.cos(m.a + s * 0.91) * 8, m.y + Math.sin(m.a + s * 0.91) * 8]);
+function drawSolvent(m) {
+  cx.save(); cx.translate(m.x, m.y); cx.rotate(m.a);
+  if (ST.v === "water") { cx.strokeStyle = CV.dark ? "#ffffff66" : "#33405f55"; cx.lineWidth = 2; for (const s of [-1, 1]) { cx.beginPath(); cx.moveTo(0, 0); cx.lineTo(Math.cos(s * 0.91) * 8, Math.sin(s * 0.91) * 8); cx.stroke(); }
+    for (const s of [-1, 1]) ball(Math.cos(s * 0.91) * 8, Math.sin(s * 0.91) * 8, 3.6, CV.dark ? "#e9eefc" : "#ffffff"); ball(0, 0, 6.4, CV["a-o"]); }
+  else { cx.strokeStyle = CV["a-c"]; cx.lineWidth = 2.4; cx.beginPath(); for (let j = 0; j < 6; j++) cx.lineTo(-17.5 + j * 7, (j % 2 ? 3.5 : -3.5) + Math.sin(ST.t * 6 + j + m.x) * 0.6); cx.stroke();
+    for (let j = 0; j < 6; j++) ball(-17.5 + j * 7, (j % 2 ? 3.5 : -3.5) + Math.sin(ST.t * 6 + j + m.x) * 0.6, 3.2, CV["a-c"]); }
   cx.restore();
 }
 function drawSolute(p) {
   const k = SU[ST.u].kind; cx.save(); cx.translate(p.x, p.y);
-  if (k === "ionic") { const plus = p.i % 2 === 0, r = plus ? 5.2 : 7.4; if (p.free && ST.v === "water") { cx.strokeStyle = plus ? CV["a-na"] : CV["a-cl"]; cx.globalAlpha = 0.35; cx.setLineDash([2, 3]); cx.beginPath(); cx.arc(0, 0, 17, 0, 6.283); cx.stroke(); cx.setLineDash([]); cx.globalAlpha = 1; }
-    ball(0, 0, r, plus ? CV["a-na"] : CV["a-cl"]); cx.fillStyle = "#fff"; cx.font = "bold 9px system-ui"; cx.textAlign = "center"; cx.textBaseline = "middle"; cx.fillText(plus ? "+" : "−", 0, 0.5); }
+  if (k === "ionic") { const plus = p.i % 2 === 0, r = plus ? 5.4 : 7.6, col = plus ? CV["a-na"] : CV["a-cl"];
+    if (p.free && ST.v === "water") { cx.strokeStyle = hexA(col, 0.55); cx.lineWidth = 1.2; cx.setLineDash([3, 4]); cx.lineDashOffset = -ST.t * 12; cx.beginPath(); cx.arc(0, 0, plus ? 17 : 20, 0, 6.283); cx.stroke(); cx.setLineDash([]); }
+    ball(0, 0, r, col, p.free ? 1 : 0.4); cx.fillStyle = "#fff"; cx.font = "bold 9px system-ui"; cx.textAlign = "center"; cx.textBaseline = "middle"; cx.fillText(plus ? "+" : "−", 0, 0.6); }
   else { cx.rotate(p.a);
-    if (k === "polar") { cx.strokeStyle = CV["a-sug"]; cx.lineWidth = 2; cx.beginPath(); for (let j = 0; j < 6; j++) cx.lineTo(Math.cos(j * 1.047) * 7, Math.sin(j * 1.047) * 7); cx.closePath(); cx.globalAlpha = 0.25; cx.fillStyle = CV["a-sug"]; cx.fill(); cx.globalAlpha = 1; cx.stroke(); for (let j = 0; j < 6; j += 2) ball(Math.cos(j * 1.047) * 10, Math.sin(j * 1.047) * 10, 2.4, CV["a-o"]); }
-    else if (k === "oil") { cx.strokeStyle = CV["a-oil"]; cx.lineWidth = 3.4; cx.lineCap = "round"; cx.lineJoin = "round"; cx.beginPath(); for (let j = 0; j < 6; j++) cx.lineTo(-15 + j * 6, j % 2 ? 3 : -3); cx.stroke(); }
-    else if (k === "iodine") { ball(-4.6, 0, 5, CV["a-iod"]); ball(4.6, 0, 5, CV["a-iod"]); }
-    else { ball(-8, 0, 4.2, CV["a-o"]); ball(8, 0, 4.2, CV["a-o"]); ball(0, 0, 4.4, CV["a-c"]); } }
+    if (k === "polar") { cx.strokeStyle = CV["a-sug"]; cx.lineWidth = 2.2; cx.beginPath(); for (let j = 0; j < 6; j++) cx.lineTo(Math.cos(j * 1.047) * 7.5, Math.sin(j * 1.047) * 7.5); cx.closePath(); cx.fillStyle = hexA(CV["a-sug"], 0.3); cx.fill(); cx.stroke();
+      for (let j = 0; j < 6; j += 2) ball(Math.cos(j * 1.047) * 11, Math.sin(j * 1.047) * 11, 2.6, CV["a-o"]); }
+    else if (k === "oil") { cx.strokeStyle = CV["a-oil"]; cx.lineWidth = 4; cx.lineCap = "round"; cx.lineJoin = "round"; cx.beginPath(); for (let j = 0; j < 7; j++) cx.lineTo(-18 + j * 6, (j % 2 ? 3 : -3) + Math.sin(ST.t * 4 + j + p.i) * 0.8); cx.stroke(); }
+    else if (k === "iodine") { ball(-4.8, 0, 5.2, CV["a-iod"], p.free ? 0.8 : 0.2); ball(4.8, 0, 5.2, CV["a-iod"]); }
+    else { ball(-8.5, 0, 4.3, CV["a-o"]); ball(8.5, 0, 4.3, CV["a-o"]); ball(0, 0, 4.6, CV["a-c"], 0.3); } }
   cx.restore();
 }
+function burst(x, y, col, out = true) { fx.push({ x, y, col, t: 0, out, sp: Array.from({ length: 7 }, (_, i) => ({ a: (i / 7) * 6.283 + Math.random() * 0.4, v: 18 + Math.random() * 16 })) }); }
 function simFrame(dt) {
-  const u = SU[ST.u], k = u.kind, heat = 0.45 + ST.T / 45, mv = still.matches ? 0.15 : 1;
+  const u = SU[ST.u], k = u.kind, heat = 0.5 + ST.T / 40, mv = still.matches ? 0.15 : 1, water = ST.v === "water";
   const nShow = Math.max(ST.A > 0 ? 2 : 0, Math.round(parts.length * Math.min(1, ST.A / u.max))), nFree = Math.round(nShow * (ST.A > 0 ? ST.D / ST.A : 0));
-  cx.clearRect(0, 0, VW, VH);
-  // headspace and liquid
-  const lg = cx.createLinearGradient(0, SURF, 0, VH); lg.addColorStop(0, (ST.v === "water" ? CV.tint : CV["a-c"]) + "30"); lg.addColorStop(1, (ST.v === "water" ? CV.tint : CV["a-c"]) + "08");
-  cx.fillStyle = lg; cx.beginPath(); cx.moveTo(0, VH); for (let x = 0; x <= VW; x += 5) cx.lineTo(x, SURF + Math.sin(x / 22 + ST.t * 1.6) * 2.2); cx.lineTo(VW, VH); cx.fill();
-  cx.strokeStyle = CV.glass; cx.globalAlpha = 0.6; cx.lineWidth = 1.2; cx.beginPath(); for (let x = 0; x <= VW; x += 5) cx.lineTo(x, SURF + Math.sin(x / 22 + ST.t * 1.6) * 2.2); cx.stroke(); cx.globalAlpha = 1;
-  cx.strokeStyle = CV.faint; cx.lineWidth = 0.5; for (let x = 50; x < VW; x += 50) { cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, VH); cx.stroke(); }
-  const layer = k === "oil" && ST.v === "water";
+  // background (with a soft trail from the last frame)
+  const bg = cx.createLinearGradient(0, 0, 0, VH);
+  if (CV.dark) { bg.addColorStop(0, "#141a3a"); bg.addColorStop(0.18, "#10173a"); bg.addColorStop(1, water ? "#06213f" : "#2a1a08"); }
+  else { bg.addColorStop(0, "#fdf6ff"); bg.addColorStop(0.18, "#f3f0ff"); bg.addColorStop(1, water ? "#cfe6ff" : "#ffe9c7"); }
+  cx.globalAlpha = still.matches ? 1 : 0.55; cx.fillStyle = bg; cx.fillRect(0, 0, VW, VH); cx.globalAlpha = 1;
+  // caustic light bands in the liquid
+  cx.save(); cx.globalAlpha = CV.dark ? 0.03 : 0.12; cx.fillStyle = "#ffffff";
+  for (let i = 0; i < 5; i++) { const x = ((i * 120 + ST.t * 14) % (VW + 160)) - 80; cx.beginPath(); cx.moveTo(x, SURF); cx.lineTo(x + 40, SURF); cx.lineTo(x - 30, VH); cx.lineTo(x - 90, VH); cx.fill(); }
+  cx.restore();
+  // surface wave
+  const wave = (x) => SURF + Math.sin(x / 22 + ST.t * 1.8) * 2.4 + Math.sin(x / 9 - ST.t * 2.6) * 0.8 * (1 + ST.stir);
+  cx.strokeStyle = CV.dark ? "#7fb6ff" : "#5b8def"; cx.lineWidth = 2; cx.beginPath(); for (let x = 0; x <= VW; x += 4) cx.lineTo(x, wave(x)); cx.stroke();
+  cx.fillStyle = CV.dark ? "#ffffff08" : "#ffffff80"; cx.fillRect(0, 0, VW, SURF - 4);
+  const layer = k === "oil" && water, swirl = ST.stir * 0.045, cxm = VW / 2, cym = (SURF + VH) / 2;
+  const flow = (o) => { if (!swirl) return; const dx = o.x - cxm, dy = o.y - cym, d = Math.hypot(dx, dy) + 30; o.vx += (-dy / d) * swirl * 3; o.vy += (dx / d) * swirl * 2; };
+  // solute
   parts.forEach((p, j) => {
-    p.show = j < nShow; if (!p.show) return; const want = j < nFree;
-    if (want && !p.free) { p.free = true; p.vx = (Math.random() - 0.5) * 2; p.vy = -1.5 - Math.random(); }
-    if (!want) p.free = false;
+    const was = p.show; p.show = j < nShow; if (!p.show) return; const want = j < nFree;
+    if (want && !p.free) { p.free = true; p.vx = (Math.random() - 0.5) * 3; p.vy = -2 - Math.random() * 1.5; if (was) burst(p.x, p.y, k === "ionic" ? (p.i % 2 ? CV["a-cl"] : CV["a-na"]) : k === "polar" ? CV["a-sug"] : CV["a-iod"]); }
+    if (!want && p.free) { p.free = false; if (k !== "gas") burst(p.hx, p.hy, CV.ink, false); else gasBubbles.push({ x: p.x, y: p.y, r: 3 + Math.random() * 3 }); }
     let hx = p.hx, hy = p.hy;
-    if (layer) { hx = 18 + (j % 12) * 40; hy = SURF + 10 + Math.floor(j / 12) * 12; }
+    if (layer) { hx = 18 + (j % 12) * 40 + Math.sin(ST.t + j) * 3; hy = SURF + 12 + Math.floor(j / 12) * 12; }
     if (k === "gas" && !want) { hx = 20 + ((j * 67) % (VW - 40)); hy = 12 + ((j * 23) % 34); }
-    if (p.free) { p.vx += (Math.random() - 0.5) * 0.7 * heat; p.vy += (Math.random() - 0.5) * 0.7 * heat; p.vx *= 0.93; p.vy *= 0.93; const sp = (1 + ST.stir * 0.7) * mv; p.x += p.vx * sp; p.y += p.vy * sp;
-      if (p.x < 10 || p.x > VW - 10) p.vx *= -1; if (p.y < SURF + 12 || p.y > VH - 10) p.vy *= -1; p.x = Math.max(10, Math.min(VW - 10, p.x)); p.y = Math.max(SURF + 12, Math.min(VH - 10, p.y)); p.a += 0.03 * mv; }
-    else if (k === "gas") { p.x += (hx - p.x) * 0.04 + (Math.random() - 0.5) * 3 * heat * mv; p.y += (hy - p.y) * 0.04 + (Math.random() - 0.5) * 3 * heat * mv; p.a += 0.08 * mv; }
-    else { const jig = Math.random() < 0.3 ? (Math.random() - 0.5) * 0.6 * heat : 0; p.x += (hx - p.x) * 0.08 + jig; p.y += (hy - p.y) * 0.08; p.a += ((layer ? Math.sin(ST.t + j) * 0.4 : 0) - p.a) * 0.1; }
+    if (p.free) { p.vx += (Math.random() - 0.5) * 0.8 * heat; p.vy += (Math.random() - 0.5) * 0.8 * heat; flow(p); p.vx *= 0.92; p.vy *= 0.92; p.x += p.vx * mv; p.y += p.vy * mv;
+      if (p.x < 10 || p.x > VW - 10) p.vx *= -1; if (p.y < SURF + 14 || p.y > VH - 10) p.vy *= -1; p.x = Math.max(10, Math.min(VW - 10, p.x)); p.y = Math.max(SURF + 14, Math.min(VH - 10, p.y)); p.a += 0.04 * mv; }
+    else if (k === "gas") { p.vx += (Math.random() - 0.5) * 2.4 * heat; p.vy += (Math.random() - 0.5) * 2.4 * heat; p.vx += (hx - p.x) * 0.01; p.vy += (hy - p.y) * 0.01; p.vx *= 0.9; p.vy *= 0.9; p.x += p.vx * mv; p.y = Math.min(SURF - 8, p.y + p.vy * mv); p.a += 0.1 * mv; }
+    else { const vib = 0.6 * heat * mv; p.x += (hx - p.x) * 0.1 + Math.sin(ST.t * 20 + p.ph) * vib * 0.3; p.y += (hy - p.y) * 0.1 + Math.cos(ST.t * 17 + p.ph) * vib * 0.3; p.a += ((layer ? Math.sin(ST.t + j) * 0.4 : 0) - p.a) * 0.1; }
   });
-  const free = parts.filter((p) => p.show && p.free);
+  const free = parts.filter((p) => p.show && p.free), crystal = parts.filter((p) => p.show && !p.free && k !== "gas");
+  // solvent: brownian motion + soft collisions + hydration + stirring swirl
+  const rm = R_MOL[ST.v] * 2;
+  for (let i = 0; i < mols.length; i++) { const m = mols[i];
+    for (let j = i + 1; j < mols.length; j++) { const n = mols[j], dx = n.x - m.x, dy = n.y - m.y, d2 = dx * dx + dy * dy; if (d2 < rm * rm && d2 > 0.01) { const d = Math.sqrt(d2), f = ((rm - d) / rm) * 0.6, ux = dx / d, uy = dy / d; m.vx -= ux * f; m.vy -= uy * f; n.vx += ux * f; n.vy += uy * f; } }
+    for (const p of crystal) { const dx = m.x - p.x, dy = m.y - p.y, d = Math.hypot(dx, dy); if (d < 16) { m.vx += (dx / d) * 0.8; m.vy += (dy / d) * 0.8; } }
+  }
   mols.forEach((m) => {
-    m.vx += (Math.random() - 0.5) * 0.9 * heat; m.vy += (Math.random() - 0.5) * 0.9 * heat; m.vx *= 0.9; m.vy *= 0.9;
-    if (ST.v === "water" && (k === "ionic" || k === "polar")) { let best = null, bd = 34; for (const p of free) { const d = Math.hypot(p.x - m.x, p.y - m.y); if (d < bd) { bd = d; best = p; } }
-      if (best) { const to = Math.atan2(best.y - m.y, best.x - m.x), ring = k === "ionic" ? (best.i % 2 === 0 ? 15 : 18) : 17; m.vx += Math.cos(to) * (bd - ring) * 0.025; m.vy += Math.sin(to) * (bd - ring) * 0.025;
-        const target = k === "ionic" && best.i % 2 === 1 ? to : to + Math.PI; let d = target - m.a; d = Math.atan2(Math.sin(d), Math.cos(d)); m.a += d * 0.18; } }
-    if (layer && m.y < SURF + 36) m.vy += 0.45;
-    const sp = (1 + ST.stir * 0.5) * mv; m.x += m.vx * sp; m.y += m.vy * sp; m.a += (Math.random() - 0.5) * 0.08 * mv;
-    if (m.x < -10) m.x += VW + 20; if (m.x > VW + 10) m.x -= VW + 20; m.y = Math.max(SURF + 8, Math.min(VH - 8, m.y));
-    drawSolvent(m, m.a);
+    m.vx += (Math.random() - 0.5) * 0.9 * heat; m.vy += (Math.random() - 0.5) * 0.9 * heat; flow(m);
+    if (water && (k === "ionic" || k === "polar")) { let best = null, bd = 36; for (const p of free) { const d = Math.hypot(p.x - m.x, p.y - m.y); if (d < bd) { bd = d; best = p; } }
+      if (best) { const to = Math.atan2(best.y - m.y, best.x - m.x), ring = k === "ionic" ? (best.i % 2 === 0 ? 15 : 18) : 18; m.vx += Math.cos(to) * (bd - ring) * 0.03; m.vy += Math.sin(to) * (bd - ring) * 0.03;
+        m.vx += best.vx * 0.05; m.vy += best.vy * 0.05;
+        const target = k === "ionic" && best.i % 2 === 1 ? to : to + Math.PI; let d = target - m.a; d = Math.atan2(Math.sin(d), Math.cos(d)); m.va += d * 0.04; } }
+    if (layer && m.y < SURF + 38) m.vy += 0.5;
+    m.va += (Math.random() - 0.5) * 0.05 * heat; m.va *= 0.85; m.a += m.va * mv;
+    m.vx *= 0.88; m.vy *= 0.88; m.x += m.vx * mv; m.y += m.vy * mv;
+    if (m.x < -12) m.x += VW + 24; if (m.x > VW + 12) m.x -= VW + 24; if (m.y < SURF + 10) { m.y = SURF + 10; m.vy = Math.abs(m.vy); } if (m.y > VH - 8) { m.y = VH - 8; m.vy = -Math.abs(m.vy); }
   });
+  // hydrogen bonds between water molecules (H of one near O of another)
+  if (water) { cx.strokeStyle = CV.dark ? "#9fc4ff55" : "#3b6fd955"; cx.lineWidth = 1; cx.setLineDash([2, 3]); cx.beginPath();
+    for (const m of mols) for (const [hx, hy] of hPos(m)) for (const n of mols) { if (n === m) continue; const d = Math.hypot(n.x - hx, n.y - hy); if (d > 6 && d < 13) { cx.moveTo(hx, hy); cx.lineTo(n.x, n.y); } }
+    cx.stroke(); cx.setLineDash([]); }
+  mols.forEach(drawSolvent);
   parts.forEach((p) => p.show && drawSolute(p));
-  // on-screen captions in the screen's own type
-  cx.fillStyle = CV.mute; cx.font = "10px ui-monospace,Menlo,monospace"; cx.textAlign = "left";
+  // effects: bursts when a particle breaks away, gas bubbles
+  fx = fx.filter((f) => { f.t += dt; const a = Math.max(0, 1 - f.t / 0.7), r = f.out ? 6 + f.t * 40 : 22 - f.t * 26; cx.strokeStyle = hexA(f.col, a * 0.8); cx.lineWidth = 2; cx.beginPath(); cx.arc(f.x, f.y, Math.max(1, r), 0, 6.283); cx.stroke();
+    if (f.out) { cx.fillStyle = hexA(f.col, a); for (const s of f.sp) { const d = 6 + s.v * f.t * 2; cx.beginPath(); cx.arc(f.x + Math.cos(s.a) * d, f.y + Math.sin(s.a) * d, 1.6 * a + 0.3, 0, 6.283); cx.fill(); } }
+    return f.t < 0.7; });
+  if (k === "gas" && Math.random() < (ST.A - ST.D) * 6 * dt) gasBubbles.push({ x: 30 + Math.random() * (VW - 60), y: VH - 10, r: 2 + Math.random() * 4 });
+  gasBubbles = gasBubbles.filter((b) => { b.y -= (40 + b.r * 8) * dt * mv; b.x += Math.sin(b.y / 10) * 0.4; cx.strokeStyle = CV.dark ? "#bcd6ffaa" : "#4d7fe0aa"; cx.lineWidth = 1.2; cx.beginPath(); cx.arc(b.x, b.y, b.r, 0, 6.283); cx.stroke(); cx.fillStyle = "#ffffff66"; cx.beginPath(); cx.arc(b.x - b.r * 0.35, b.y - b.r * 0.35, b.r * 0.3, 0, 6.283); cx.fill(); return b.y > SURF; });
+  // captions
+  cx.fillStyle = CV.dark ? "#c9d4ff" : "#4b4f86"; cx.font = "600 10px ui-monospace,Menlo,monospace"; cx.textAlign = "left";
   cx.fillText(`${SV[ST.v].f} · ${SV[ST.v].polar ? "POLAR" : "NONPOLAR"}   +   ${u.f === "oil" ? "OIL" : u.f}`, 10, 16);
   cx.fillText(k === "gas" ? "GAS ABOVE THE LIQUID" : "AIR", 10, 34);
   cx.textAlign = "right"; cx.fillText(`${ST.T.toFixed(0)} °C`, VW - 10, 16);
-  cx.strokeStyle = CV.mute; cx.lineWidth = 1; cx.beginPath(); cx.moveTo(VW - 60, VH - 10); cx.lineTo(VW - 10, VH - 10); cx.moveTo(VW - 60, VH - 13); cx.lineTo(VW - 60, VH - 7); cx.moveTo(VW - 10, VH - 13); cx.lineTo(VW - 10, VH - 7); cx.stroke();
+  cx.strokeStyle = cx.fillStyle; cx.lineWidth = 1; cx.beginPath(); cx.moveTo(VW - 60, VH - 10); cx.lineTo(VW - 10, VH - 10); cx.moveTo(VW - 60, VH - 13); cx.lineTo(VW - 60, VH - 7); cx.moveTo(VW - 10, VH - 13); cx.lineTo(VW - 10, VH - 7); cx.stroke();
   cx.fillText("1 nm", VW - 10, VH - 16);
   q("#simRead").textContent = `${free.length} / ${nShow} particles free`;
 }
@@ -289,7 +330,7 @@ ${Array.from({ length: solid }, (_, i) => `<rect x="${44 + (i * 7) % 32}" y="${7
 <ellipse cx="60" cy="14" rx="26" ry="8" fill="none" stroke="var(--glass)"/>${extra}</svg>`;
 const dots = (n, col, y0, y1, r = 2.2) => Array.from({ length: n }, (_, i) => `<circle r="${r}" fill="var(${col})" cx="${42 + ((i * 37) % 36)}" cy="${y0 + ((i * 53) % (y1 - y0))}"><animate attributeName="cy" values="${y0 + ((i * 53) % (y1 - y0))};${y0 + ((i * 29 + 13) % (y1 - y0))};${y0 + ((i * 53) % (y1 - y0))}" dur="${3 + (i % 4)}s" repeatCount="indefinite"/></circle>`).join("");
 const TABS = [
-  ["Types", "Solutions can be gas, liquid or solid", [
+  ["🧪 Types", "Solutions can be gas, liquid or solid", [
     ["Gas in gas", "Air", "Oxygen spreads in nitrogen.", mini(0, 0, "--tint", dots(10, "--a-o", 20, 74) + dots(12, "--a-n", 20, 74, 1.8))],
     ["Gas in liquid", "Soda", "CO₂ is pushed into water.", mini(48, 0, "--tint", dots(8, "--anatomy-hi", 40, 76, 1.6))],
     ["Liquid in liquid", "Vinegar", "Acetic acid in water.", mini(44, 0, "--warn", dots(8, "--warn", 42, 76))],
@@ -297,19 +338,19 @@ const TABS = [
     ["Solid in solid", "Brass", "Zinc in copper. An alloy.", `<svg viewBox="0 0 120 92" aria-hidden="true"><path d="M30 40l30-16 30 16-30 16z" fill="var(--anatomy-top)" stroke="var(--anatomy-hi)"/><path d="M30 40v22l30 16V56z" fill="var(--anatomy-shade-1)" stroke="var(--anatomy-hi)"/><path d="M90 40v22L60 78V56z" fill="var(--anatomy-shade-3)" stroke="var(--anatomy-hi)"/>${Array.from({ length: 12 }, (_, i) => `<circle cx="${42 + (i % 4) * 12}" cy="${34 + Math.floor(i / 4) * 6 + (i % 2) * 2}" r="2.6" fill="var(${i % 4 === 1 ? "--a-iod" : "--warn"})"/>`).join("")}</svg>`],
     ["Liquid in solid", "Dental filling", "Mercury in silver (amalgam).", `<svg viewBox="0 0 120 92" aria-hidden="true"><path d="M44 16c10-6 22-6 32 0 6 14-2 52-8 52-4 0-4-18-8-18s-4 18-8 18c-6 0-14-38-8-52z" fill="var(--anatomy-top)" stroke="var(--anatomy-hi)"/><ellipse cx="60" cy="24" rx="9" ry="5" fill="var(--anatomy-mid)"/></svg>`],
   ]],
-  ["How full", "Unsaturated, saturated, supersaturated", [
+  ["📏 How full", "Unsaturated, saturated, supersaturated", [
     ["Unsaturated", "Room for more", "Less solute than it can hold. More will still dissolve.", mini(46, 0, "--ok", dots(5, "--a-na", 42, 76))],
     ["Saturated", "Full", "Holds the most it can. Extra stays at the bottom. Particles leave and join at the same speed.", mini(46, 9, "--warn", dots(10, "--a-na", 42, 72))],
     ["Supersaturated", "Too full", "Holds more than the limit, after slow cooling. One seed crystal makes the extra come out fast.", mini(46, 1, "--bad", dots(16, "--a-na", 42, 76))],
     ["Dilute · concentrated", "A little or a lot", "Dilute: a little solute. Concentrated: a lot. These words only compare two solutions.", mini(46, 0, "--tint", dots(3, "--a-na", 42, 76)) ],
   ]],
-  ["Heat & pressure", "Temperature changes how much can dissolve", [
+  ["🔥 Heat & pressure", "Temperature changes how much can dissolve", [
     ["Solids", "Hot = usually more", "Hot particles move fast and hit the crystal harder. KNO₃ and sugar change a lot; salt changes very little.", mini(46, 2, "--heat", dots(10, "--a-sug", 42, 76))],
     ["Gases", "Hot = less", "Gas particles escape faster from hot water. Warm soda goes flat.", mini(46, 0, "--tint", dots(3, "--anatomy-hi", 44, 76, 1.6) + `<g fill="none" stroke="var(--glass)">${[0, 1, 2].map((i) => `<circle cx="${50 + i * 10}" r="2.5"><animate attributeName="cy" values="76;34" dur="${1.4 + i * 0.4}s" repeatCount="indefinite"/></circle>`).join("")}</g>`)],
     ["Pressure", "Only for gases", "More pressure pushes more gas into the liquid. Open a soda: pressure drops, bubbles come out.", `<svg viewBox="0 0 120 92" aria-hidden="true"><path d="M50 4h20v10l8 10v62H42V24l8-10z" fill="var(--glass)" fill-opacity=".08" stroke="var(--glass)"/><rect x="48" y="0" width="24" height="6" fill="var(--bad)"/><path d="M43 40h34v45H43z" fill="var(--tint)" fill-opacity=".25"/>${dots(10, "--anatomy-hi", 44, 82, 1.4).replace(/cx="(\d+)/g, (m, x) => `cx="${+x + 6}`)}</svg>`],
   ]],
-  ["Like dissolves like", "Polar with polar, nonpolar with nonpolar", null],
-  ["Faster", "Speed is not amount", [
+  ["🧲 Like dissolves like", "Polar with polar, nonpolar with nonpolar", null],
+  ["⚡ Faster", "Speed is not amount", [
     ["Stirring", "Fresh solvent", "Moves new solvent next to the crystal.", mini(46, 4, "--tint", `<path d="M60 18v44" stroke="var(--anatomy-hi)" stroke-width="2"/><rect x="50" y="60" width="20" height="4" rx="2" fill="var(--anatomy-hi)"><animateTransform attributeName="transform" type="rotate" from="0 60 62" to="360 60 62" dur="1s" repeatCount="indefinite"/></rect>`)],
     ["Heat", "Faster particles", "Particles move faster and hit harder.", mini(46, 3, "--heat", dots(8, "--a-o", 42, 76))],
     ["Small pieces", "More surface", "Powder has much more surface than one big lump.", `<svg viewBox="0 0 120 92" aria-hidden="true"><rect x="16" y="40" width="30" height="30" fill="var(--anatomy-top)" stroke="var(--anatomy-hi)"/>${Array.from({ length: 9 }, (_, i) => `<rect x="${70 + (i % 3) * 12}" y="${40 + Math.floor(i / 3) * 12}" width="8" height="8" fill="var(--anatomy-top)" stroke="var(--anatomy-hi)"/>`).join("")}<text x="31" y="84" text-anchor="middle" font-size="9" fill="var(--anatomy-muted)">slow</text><text x="88" y="84" text-anchor="middle" font-size="9" fill="var(--anatomy-muted)">fast</text></svg>`],
