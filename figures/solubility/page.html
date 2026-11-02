@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Solubility Lab</title>
+<style>/*ISO_CSS*/
+.iso{--a-na:#9085e9;--a-cl:#199e70;--a-o:#e66767;--a-h:#f0efec;--a-c:#8b8f98;--a-sug:#d95926;--a-oil:#c98500;--a-iod:#d55181;--a-k:#9085e9;--a-n:#3987e5;
+--c1:#3987e5;--c2:#d95926;--c3:#199e70;--c4:#c98500;--ok:#199e70;--warn:#c98500;--bad:#e66767;--heat:#ff7a3d;--glass:#86b6ef;--tint:#3987e5;--line2:#232323}
+.iso[data-theme="light"]{--a-na:#6250d6;--a-cl:#1baf7a;--a-o:#e34948;--a-h:#ffffff;--a-c:#5d626c;--a-sug:#eb6834;--a-oil:#eda100;--a-iod:#d55181;--a-k:#6250d6;--a-n:#2a78d6;
+--c1:#2a78d6;--c2:#eb6834;--c3:#1baf7a;--c4:#eda100;--ok:#1baf7a;--warn:#c98500;--bad:#e34948;--heat:#eb6834;--glass:#256abf;--tint:#2a78d6;--line2:#e7e7e4}
+*{box-sizing:border-box}
+html{color-scheme:dark}body[data-theme="light"]{color-scheme:light}
+body{margin:0;background:var(--anatomy-page);color:var(--anatomy-text);font:14px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{width:min(1240px,100% - 32px);margin:40px auto 80px}
+.mono{font-family:var(--anatomy-mono)}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--anatomy-faint)}
+.kicker{font:10.5px var(--anatomy-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--anatomy-muted)}
+h1{margin:6px 0 6px;color:var(--anatomy-strong);font-size:clamp(30px,4.4vw,48px);letter-spacing:-.03em;line-height:1.05;font-weight:600}
+h1 span{color:var(--anatomy-muted);font-weight:400}
+.lead{max-width:640px;margin:0;font-size:15px}
+.lead b,.card b{color:var(--anatomy-strong);font-weight:600}
+.toggle{font:11px var(--anatomy-mono);letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--anatomy-mid);color:var(--anatomy-text);padding:7px 12px;cursor:pointer}
+.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.c7{grid-column:span 7}.c5{grid-column:span 5}.c12{grid-column:span 12}.c8{grid-column:span 8}.c4{grid-column:span 4}
+@media (max-width:980px){.c7,.c5,.c8,.c4{grid-column:span 12}}
+.iso-figure{margin:0}
+.iso-plate{padding:46px 20px 46px}
+.stack{display:grid;gap:16px;align-content:start}
+.card{background:var(--anatomy-card);box-shadow:0 0 0 1px var(--anatomy-mid);padding:18px 20px;position:relative}
+.card h3{margin:0 0 10px;font:10.5px var(--anatomy-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--anatomy-muted);font-weight:400}
+.card h4{margin:2px 0 4px;color:var(--anatomy-strong);font-size:16px;font-weight:600}
+/* bench pieces */
+.glass-back{fill:var(--glass);fill-opacity:.05;stroke:none}
+.glass-floor{fill:var(--glass);fill-opacity:.07;stroke:var(--glass);stroke-opacity:.35;stroke-width:.6}
+.glass-front{fill:var(--glass);fill-opacity:.05;stroke:none}
+.glass-edge{fill:none;stroke:var(--glass);stroke-opacity:.85;stroke-width:1;vector-effect:non-scaling-stroke}
+.glass-edge.thin{stroke-opacity:.35;stroke-width:.6}
+.glass-shine{stroke:var(--anatomy-lit);stroke-opacity:.35;stroke-width:3;stroke-linecap:round}
+.grad{stroke:var(--glass);stroke-width:.9;stroke-linecap:round}.grad.minor{stroke-opacity:.55;stroke-width:.6}
+.liquid{fill:var(--tint);fill-opacity:.16;transition:fill .8s,fill-opacity .8s}
+.surface{fill:var(--tint);fill-opacity:.22;stroke:var(--glass);stroke-opacity:.7;stroke-width:.7;transition:fill .8s}
+.oil{fill:var(--a-oil);fill-opacity:.45;stroke:var(--a-oil);stroke-width:.7}
+.stirbar{stroke:var(--anatomy-hi);stroke-width:5;stroke-linecap:round;fill:none}
+.mercury{stroke:var(--bad);stroke-width:2.2;stroke-linecap:round;fill:none}.mercury-bulb{fill:var(--bad)}
+.coils path{fill:none;stroke:var(--heat);stroke-width:1.4}
+.lcd{fill:var(--heat)}
+.crystal{fill:var(--anatomy-face);stroke:var(--anatomy-hi);stroke-width:.5}
+.bubble{fill:none;stroke:var(--glass);stroke-width:.8}
+.steam path{fill:none;stroke:var(--anatomy-mid);stroke-width:1.4;stroke-linecap:round}
+.jar-fill{fill:var(--anatomy-lo);opacity:.6}
+.pick{cursor:pointer}.pick:hover [data-lift]{filter:brightness(1.15)}
+.pick [data-lift]{transition:transform .5s var(--anatomy-ease)}
+/* particle view */
+.screen{position:relative;background:#07090c;box-shadow:inset 0 0 0 1px var(--anatomy-lo),inset 0 0 40px #000;border-radius:4px;overflow:hidden}
+.iso[data-theme="light"] .screen{background:#f7f8fa;box-shadow:inset 0 0 0 1px var(--anatomy-lo)}
+.screen canvas{display:block;width:100%;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:12.5px;color:var(--anatomy-muted)}
+.legend i{box-shadow:0 0 0 1px var(--anatomy-lo);display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--anatomy-faint);box-shadow:0 0 0 1px var(--anatomy-faint)}
+.stat{background:var(--anatomy-card);padding:10px 12px}
+.stat small{display:block;font:10px var(--anatomy-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--anatomy-muted)}
+.stat strong{font:500 22px var(--anatomy-mono);color:var(--anatomy-strong);font-variant-numeric:tabular-nums}
+.meter{margin-top:16px}
+.meter-bar{position:relative;height:14px;background:var(--line2);box-shadow:inset 0 0 0 1px var(--anatomy-faint)}
+.meter-fill{position:absolute;inset:0 auto 0 0;width:0;background:var(--ok);transition:background .4s}
+.meter-mark{position:absolute;top:-5px;bottom:-5px;left:66.6%;width:1.5px;background:var(--anatomy-strong)}
+.meter-scale{display:flex;justify-content:space-between;font:10px var(--anatomy-mono);color:var(--anatomy-muted);margin-top:6px;letter-spacing:.06em;text-transform:uppercase}
+.state{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:18px;color:var(--anatomy-strong);font-weight:600}
+.state i{width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 4px color-mix(in srgb,currentColor 20%,transparent)}
+/* controls */
+.console{display:grid;grid-template-columns:repeat(12,1fr);gap:1px;background:var(--anatomy-faint);box-shadow:0 0 0 1px var(--anatomy-mid)}
+.ctl{background:var(--anatomy-card);padding:14px 16px}
+.ctl.w4{grid-column:span 4}.ctl.w3{grid-column:span 3}.ctl.w2{grid-column:span 2}.ctl.w5{grid-column:span 5}
+@media (max-width:980px){.ctl.w4,.ctl.w3,.ctl.w2,.ctl.w5{grid-column:span 12}}
+.ctl label,.ctl .lab{display:flex;justify-content:space-between;font:10.5px var(--anatomy-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--anatomy-muted);margin-bottom:10px}
+.ctl output{color:var(--anatomy-strong);font-variant-numeric:tabular-nums}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.btn{font:13px ui-sans-serif,system-ui,sans-serif;color:var(--anatomy-text);background:transparent;border:1px solid var(--anatomy-lo);padding:5px 10px;cursor:pointer;transition:all .2s var(--anatomy-ease)}
+.seg button:hover,.btn:hover{border-color:var(--anatomy-hi);color:var(--anatomy-strong)}
+.seg button[aria-pressed=true]{background:var(--anatomy-strong);border-color:var(--anatomy-strong);color:var(--anatomy-card)}
+.seg button:disabled,.btn:disabled{opacity:.3;cursor:not-allowed}
+.seg button sub{font-size:.75em}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,var(--c1),var(--heat))}
+input[type=range]::-moz-range-track{height:2px;background:linear-gradient(90deg,var(--c1),var(--heat))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-7px;border-radius:50%;background:var(--anatomy-card);border:2px solid var(--anatomy-strong)}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--anatomy-card);border:2px solid var(--anatomy-strong)}
+input.amt::-webkit-slider-runnable-track{background:var(--anatomy-mid)}input.amt::-moz-range-track{background:var(--anatomy-mid)}
+/* story */
+#say{font-size:15.5px;line-height:1.65;color:var(--anatomy-text);min-height:120px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.steps div{border-top:2px solid var(--anatomy-lo);padding-top:6px;font-size:12.5px;color:var(--anatomy-muted);transition:.3s}
+.steps div.on{border-color:var(--heat);color:var(--anatomy-strong)}
+/* charts */
+.chart text{font:11px var(--anatomy-mono);fill:var(--anatomy-muted)}
+.chart .grid line{stroke:var(--anatomy-faint);stroke-width:1}
+.chart .axis{stroke:var(--anatomy-mid);stroke-width:1}
+.chart .curve{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.chart .lbl{font:600 12px ui-sans-serif,system-ui,sans-serif}
+.tip{position:absolute;pointer-events:none;background:var(--anatomy-strong);color:var(--anatomy-card);font:12px/1.45 var(--anatomy-mono);padding:6px 9px;opacity:0;transition:opacity .12s;white-space:nowrap;z-index:3}
+/* learn tabs */
+.tabs{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--anatomy-lo);margin:-4px 0 18px}
+.tabs button{font:11px var(--anatomy-mono);letter-spacing:.1em;text-transform:uppercase;background:none;border:0;border-bottom:2px solid transparent;color:var(--anatomy-muted);padding:10px 14px;cursor:pointer}
+.tabs button[aria-selected=true]{color:var(--anatomy-strong);border-color:var(--heat)}
+.panel{display:none;animation:rise .45s var(--anatomy-ease)}.panel.on{display:grid}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}}
+.tiles{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.tile{background:var(--anatomy-card);padding:16px;box-shadow:0 0 0 1px var(--anatomy-faint);transition:box-shadow .2s}.tile:hover{box-shadow:0 0 0 1px var(--anatomy-mid)}
+.tile svg{width:100%;height:92px;display:block;margin-bottom:8px}
+.tag{display:inline-block;font:10px var(--anatomy-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--anatomy-muted);border:1px solid var(--anatomy-lo);padding:1px 7px;margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--anatomy-faint)}
+th{font:10.5px var(--anatomy-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--anatomy-muted);font-weight:400}
+.y{color:var(--ok);font-weight:600}.n{color:var(--bad);font-weight:600}
+footer{margin-top:28px;font-size:12px;color:var(--anatomy-muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body class="iso" data-theme="dark"><div class="wrap">
+<header>
+  <div><div class="kicker">Chemistry · Interactive figures</div>
+  <h1>Solubility <span>— how things dissolve</span></h1>
+  <p class="lead">A <b>solution</b> is a mix where one thing spreads out evenly in another. The <b>solute</b> dissolves. The <b>solvent</b> does the dissolving. <b>Solute + solvent = solution.</b></p></div>
+  <button class="toggle" id="theme">Light / Dark</button>
+</header>
+
+<div class="bento">
+  <figure class="iso-figure c7"><div class="iso-plate" id="benchPlate">
+    <div class="iso-plate-corners" aria-hidden="true"><span class="iso-plate-corner" data-corner="fig">Fig 1</span><span class="iso-plate-corner" data-corner="title" id="benchTitle">Table salt in water</span><span class="iso-plate-corner" data-corner="hint">Click a jar or a bottle</span><span class="iso-plate-corner" data-corner="readout" id="benchRead">20.0 °C · stirrer off</span></div>
+    <!--BENCH-->
+  </div></figure>
+
+  <div class="c5 stack">
+    <figure class="iso-figure"><div class="iso-plate">
+      <div class="iso-plate-corners" aria-hidden="true"><span class="iso-plate-corner" data-corner="fig">Fig 2</span><span class="iso-plate-corner" data-corner="title">Inside the beaker</span><span class="iso-plate-corner" data-corner="hint">Zoom ×100,000,000</span><span class="iso-plate-corner" data-corner="readout" id="simRead">0 / 0 free</span></div>
+      <div class="screen"><canvas id="sim" width="1000" height="680" aria-label="Particle view: solvent molecules and solute particles moving"></canvas></div>
+      <div class="legend" id="legend"></div>
+    </div></figure>
+    <div class="card">
+      <h3>Readings</h3>
+      <div class="stats"><div class="stat"><small>Can dissolve</small><strong id="sCap">–</strong></div><div class="stat"><small>Dissolved</small><strong id="sDis">–</strong></div><div class="stat"><small>Not dissolved</small><strong id="sLeft">–</strong></div></div>
+      <div class="meter"><div class="meter-bar"><div class="meter-fill" id="mFill"></div><div class="meter-mark" title="saturation limit"></div></div>
+      <div class="meter-scale"><span>empty</span><span style="margin-left:40%">limit · saturated</span><span>too full</span></div></div>
+      <div class="state" id="state"><i></i><span>–</span></div>
+    </div>
+  </div>
+
+  <div class="console c12" role="group" aria-label="Lab controls">
+    <div class="ctl w3"><div class="lab">1 · Solvent</div><div class="seg" id="solvents"></div></div>
+    <div class="ctl w5"><div class="lab">2 · Solute</div><div class="seg" id="solutes"></div></div>
+    <div class="ctl w4"><label for="temp">3 · Heat <output id="tempV">20 °C</output></label><input id="temp" type="range" min="0" max="100" value="20"></div>
+    <div class="ctl w4"><label for="amt">4 · Amount in 100 g solvent <output id="amtV">20 g</output></label><input id="amt" class="amt" type="range"></div>
+    <div class="ctl w3"><div class="lab">5 · Stirring</div><div class="seg" id="stir"><button aria-pressed="true" data-v="0">Off</button><button data-v="1">Slow</button><button data-v="2">Fast</button></div></div>
+    <div class="ctl w5"><div class="lab">Guided demos</div><div class="seg"><button class="btn" id="demoLike">▶ Like dissolves like</button><button class="btn" id="demoHeat">▶ Heat KNO₃</button><button class="btn" id="demoSuper">▶ Supersaturated</button><button class="btn" id="seed" disabled>Drop seed crystal</button></div></div>
+  </div>
+
+  <figure class="iso-figure c7"><div class="iso-plate" style="position:relative" id="curvePlate">
+    <div class="iso-plate-corners" aria-hidden="true"><span class="iso-plate-corner" data-corner="fig">Fig 3</span><span class="iso-plate-corner" data-corner="title" id="curveTitle">NaCl in water</span><span class="iso-plate-corner" data-corner="hint">Hover the curve</span><span class="iso-plate-corner" data-corner="readout" id="curveRead">–</span></div>
+    <svg class="chart" id="curve" viewBox="0 0 700 380" role="img" aria-label="Live solubility curve of the selected solute"></svg>
+    <div class="tip" id="tip3"></div>
+  </div></figure>
+
+  <div class="card c5"><h3>What is happening</h3><div id="say" aria-live="polite"></div>
+    <div class="steps" id="steps"><div>1 · Solvent hits the solute</div><div>2 · Particles break away</div><div>3 · Solvent surrounds them</div></div></div>
+
+  <div class="card c12"><h3>Learn</h3>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div id="panels"></div>
+  </div>
+
+  <figure class="iso-figure c8"><div class="iso-plate" style="position:relative" id="allPlate">
+    <div class="iso-plate-corners" aria-hidden="true"><span class="iso-plate-corner" data-corner="fig">Fig 4</span><span class="iso-plate-corner" data-corner="title">Solubility curves · water</span><span class="iso-plate-corner" data-corner="hint">Hover to compare</span><span class="iso-plate-corner" data-corner="readout" id="allRead">g per 100 g water</span></div>
+    <svg class="chart" id="all" viewBox="0 0 760 400" role="img" aria-label="Solubility of KNO3, KCl, NaCl and cerium sulfate in water from 0 to 100 degrees"></svg>
+    <div class="tip" id="tip4"></div>
+  </div></figure>
+  <div class="card c4"><h3>How to read a curve</h3>
+    <p><b>1.</b> Find the temperature on the bottom line.</p>
+    <p><b>2.</b> Go up to the curve. Read the grams on the left. That is the most that can dissolve in 100 g of water.</p>
+    <p><b>3.</b> A <b>steep</b> curve (KNO₃) means heat changes a lot. A <b>flat</b> curve (NaCl) means heat changes very little.</p>
+    <p><b>4.</b> A curve that goes <b>down</b> (Ce₂(SO₄)₃) means less dissolves when hot. Gases also go down.</p>
+    <p><b>Where curves cross</b> (KNO₃ and NaCl near 22 °C), both dissolve the same amount.</p>
+  </div>
+</div>
+<footer>Data: g of solute per 100 g of solvent at 1 atm, from standard school tables (CRC Handbook). Iodine and Ce₂(SO₄)₃ values are approximate. Built with the Anatomy kit.</footer>
+</div>
+<script type="module">/*SCRIPT*/</script>
+</body></html>
