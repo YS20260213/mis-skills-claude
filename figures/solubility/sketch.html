@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Solubility Sketch</title>
+<style>
+:root{--bg:#0f0f0f;--card:#161616;--ink:#d4d4d4;--mid:#6a6a6a;--lo:#333;--water:#3987e5;--na:#9085e9;--cl:#199e70;--oil:#c98500}
+@media (prefers-color-scheme:light){:root{--bg:#f2f2ef;--card:#fbfbfa;--ink:#26262a;--mid:#8a8a8f;--lo:#d4d4d6;--water:#2a78d6;--na:#6250d6;--cl:#1baf7a;--oil:#eda100}}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,sans-serif}
+main{max-width:760px;margin:auto;padding:16px}
+.card{background:var(--card);outline:1px solid var(--mid);padding:12px}
+svg{width:100%;height:auto;display:block}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+button{background:none;color:var(--ink);border:1px solid var(--mid);padding:4px 10px;cursor:pointer}
+button[aria-pressed=true]{border-color:var(--ink);font-weight:600}
+#out{font-family:ui-monospace,monospace;font-size:13px}
+</style></head><body><main>
+<h1>Solutions: a quick sketch</h1>
+<p>A <b>solution</b> = a <b>solute</b> (the thing that dissolves) + a <b>solvent</b> (the thing it dissolves in). <b>Like dissolves like:</b> water is polar, so it dissolves salt, but not oil.</p>
+<div class="card">
+<svg viewBox="0 0 600 300" aria-label="A beaker on a hot plate, with a zoom circle showing particles">
+  <!-- hot plate (isometric box) -->
+  <polygon points="60,230 160,200 260,230 160,260" fill="var(--lo)" stroke="var(--mid)"/>
+  <polygon points="60,230 160,260 160,285 60,255" fill="var(--card)" stroke="var(--mid)"/>
+  <polygon points="160,260 260,230 260,255 160,285" fill="var(--bg)" stroke="var(--mid)"/>
+  <circle id="knob" cx="110" cy="262" r="6" fill="none" stroke="var(--ink)"/>
+  <!-- beaker -->
+  <ellipse cx="160" cy="225" rx="55" ry="16" fill="none" stroke="var(--mid)"/>
+  <path id="liquid" d="" fill="var(--water)" opacity=".25"/>
+  <g id="crystals"></g>
+  <path d="M105 95 V225 A55 16 0 0 0 215 225 V95" fill="none" stroke="var(--ink)"/>
+  <ellipse cx="160" cy="95" rx="55" ry="16" fill="none" stroke="var(--ink)"/>
+  <!-- zoom circle -->
+  <line x1="190" y1="170" x2="330" y2="150" stroke="var(--mid)" stroke-dasharray="3 3"/>
+  <circle cx="420" cy="150" r="115" fill="var(--bg)" stroke="var(--ink)"/>
+  <clipPath id="zc"><circle cx="420" cy="150" r="114"/></clipPath>
+  <g id="atoms" clip-path="url(#zc)"></g>
+  <text x="420" y="285" text-anchor="middle" fill="var(--mid)" font-size="12">zoom ×100,000,000</text>
+</svg>
+<div class="row" role="group" aria-label="Solute">
+  <span>Solute:</span>
+  <button data-s="salt" aria-pressed="true">Salt (NaCl)</button>
+  <button data-s="kno3">KNO₃</button>
+  <button data-s="oil">Oil</button>
+</div>
+<div class="row"><label>Temperature: <input id="t" type="range" min="0" max="100" value="20"> <span id="tv">20</span> °C</label></div>
+<div class="row"><label>Amount added: <input id="a" type="range" min="0" max="100" value="50"> <span id="av">50</span> g</label></div>
+<div id="out" aria-live="polite"></div>
+</div>
+<p><b>Next version will add:</b> full isometric lab bench, types of solutions (gas, liquid, solid), solubility curve chart, sugar, iodine, CO₂ gas, hexane solvent, stirring speed, and the supersaturated demo.</p>
+</main>
+<script>
+const S={salt:[35.7,35.8,35.9,36.1,36.4,37,37.3,37.8,38.4,39,39.8],kno3:[13.3,20.9,31.6,45.8,63.9,85.5,110,138,169,202,246],oil:Array(11).fill(0)};
+const sol=(k,t)=>{const i=Math.min(9,Math.floor(t/10)),f=t/10-i;return S[k][i]+(S[k][i+1]-S[k][i])*f};
+let k="salt",T=20,A=50,D=0;
+const $=s=>document.querySelector(s),NS="http://www.w3.org/2000/svg";
+const mk=(tag,at)=>{const e=document.createElementNS(NS,tag);for(const n in at)e.setAttribute(n,at[n]);return e};
+// particles in the zoom circle
+const atoms=$("#atoms"),W=[],U=[];
+for(let i=0;i<40;i++){const g=mk("g",{});g.append(mk("circle",{r:5,fill:"var(--water)"}),mk("circle",{r:2.5,cx:5,cy:-3,fill:"var(--ink)"}),mk("circle",{r:2.5,cx:-5,cy:-3,fill:"var(--ink)"}));atoms.append(g);W.push({g,x:320+Math.random()*200,y:50+Math.random()*190,vx:0,vy:0})}
+for(let i=0;i<24;i++){const c=mk("circle",{r:i%2?6:4});atoms.append(c);U.push({c,i,x:0,y:0,free:false})}
+function home(p){const col=p.i%8,row=Math.floor(p.i/8);return[392+col*8,222-row*8]}
+document.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{k=b.dataset.s;D=0;document.querySelectorAll("[data-s]").forEach(x=>x.setAttribute("aria-pressed",x===b))});
+$("#t").oninput=e=>{T=+e.target.value;$("#tv").textContent=T};
+$("#a").oninput=e=>{A=+e.target.value;$("#av").textContent=A};
+function frame(){
+  const cap=sol(k,T),target=Math.min(A,cap);D+=(target-D)*0.03*(1+T/40);
+  const undis=Math.max(0,A-D),state=k==="oil"?"does not dissolve (oil is nonpolar, water is polar)":D>=cap-0.5?"SATURATED: no more can dissolve":"UNSATURATED: more can dissolve";
+  $("#out").textContent=`Can dissolve ${cap.toFixed(1)} g in 100 g water at ${T} °C · dissolved ${D.toFixed(1)} g · left at bottom ${undis.toFixed(1)} g · ${state}`;
+  // beaker liquid and crystals
+  $("#liquid").setAttribute("d",k==="oil"?"M106 130 V225 A54 15 0 0 0 214 225 V130 Z":"M106 130 V225 A54 15 0 0 0 214 225 V130 Z");
+  const cr=$("#crystals"),n=Math.round(undis/(k==="kno3"?6:2.5));
+  while(cr.childNodes.length<n)cr.append(mk("rect",{width:4,height:4,fill:k==="oil"?"var(--oil)":"var(--ink)",x:120+Math.random()*80,y:k==="oil"?126+Math.random()*6:214+Math.random()*10}));
+  while(cr.childNodes.length>n)cr.lastChild.remove();
+  // zoom: water moves faster when hot
+  const speed=0.6+T/50;
+  W.forEach(w=>{w.vx+=(Math.random()-.5)*speed;w.vy+=(Math.random()-.5)*speed;w.vx*=.9;w.vy*=.9;w.x+=w.vx;w.y+=w.vy;
+    if(k==="oil"&&w.y<120)w.vy+=0.5;w.x=Math.max(310,Math.min(530,w.x));w.y=Math.max(40,Math.min(258,w.y));w.g.setAttribute("transform",`translate(${w.x} ${w.y})`)});
+  const free=Math.round(U.length*(A?D/A:0));
+  U.forEach((p,j)=>{const ion=k!=="oil";p.c.setAttribute("fill",ion?(p.i%2?"var(--cl)":"var(--na)"):"var(--oil)");
+    const wantFree=ion&&j<free;
+    if(wantFree&&!p.free){p.free=true;[p.x,p.y]=home(p)}
+    if(!wantFree)p.free=false;
+    if(p.free){p.x+=(Math.random()-.5)*2*speed;p.y+=(Math.random()-.5)*2*speed;p.x=Math.max(320,Math.min(520,p.x));p.y=Math.max(50,Math.min(250,p.y))}
+    else{const[hx,hy]=k==="oil"?[392+(p.i%8)*8,70+Math.floor(p.i/8)*8]:home(p);p.x+=(hx-p.x)*.1;p.y+=(hy-p.y)*.1}
+    p.c.setAttribute("cx",p.x);p.c.setAttribute("cy",p.y)});
+  requestAnimationFrame(frame)}
+frame();
+</script></body></html>
