@@ -231,6 +231,53 @@ h2{font-size:52px;font-weight:800;letter-spacing:-.01em;text-shadow:0 3px 0 #fff
 .confetti{position:absolute;width:10px;height:14px;top:-20px;z-index:40;animation:fall 2.4s linear forwards}
 @keyframes fall{to{transform:translateY(780px) rotate(720deg)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important}}
+
+/* ===== v2: motion & new slides ===== */
+.slide{transform:scale(1.04);filter:blur(8px);transition:opacity .7s,visibility .7s,transform .9s cubic-bezier(.2,.8,.2,1),filter .7s}
+.slide.on{transform:none;filter:none}
+#fx{position:absolute;inset:0;width:1280px;height:720px;pointer-events:none;z-index:45}
+.clouds{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.cloud{position:absolute;width:220px;height:70px;border-radius:60px;background:#fff;opacity:.75;filter:blur(1px);animation:drift linear infinite}
+.cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:100px;height:100px;left:30px;top:-50px}.cloud::after{width:80px;height:80px;left:110px;top:-34px}
+@keyframes drift{from{transform:translateX(-300px)}to{transform:translateX(1600px)}}
+[data-s]{transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .8s cubic-bezier(.2,1.5,.4,1)}
+[data-s]:not(.in){transform:translateY(26px) scale(.92)}
+.node.got svg{animation:got .9s cubic-bezier(.2,1.6,.4,1)}
+@keyframes got{30%{transform:scale(1.18) translateY(-10px)}60%{transform:scale(.95)}}
+.node .ring{position:absolute;left:50%;top:90px;width:20px;height:20px;margin:-10px;border-radius:50%;border:4px solid #ffd23f;opacity:0;pointer-events:none}
+.node.got .ring{animation:ringo .9s ease-out}
+@keyframes ringo{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(12)}}
+.donut{display:inline-block;vertical-align:middle;margin-right:10px}
+.donut circle{transition:stroke-dasharray 1.6s cubic-bezier(.2,.8,.2,1)}
+.lampOn{animation:flick 1.4s steps(1) 1}
+@keyframes flick{0%,20%,40%{opacity:.2}10%,30%,100%{opacity:.95}}
+/* importance slide */
+.imp{position:absolute;left:46px;right:46px;top:148px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.imp .bubble{padding:10px 16px;font-size:15.5px;line-height:1.3;min-height:0;position:relative;overflow:hidden}
+.imp .bubble::before{content:"";position:absolute;left:0;top:0;right:0;height:6px;background:var(--bar)}
+.imp h3{font-size:23px;margin:2px 0 4px}
+.imp svg{width:100%;height:84px;display:block;margin-bottom:4px}
+.imp .num{position:absolute;right:12px;top:8px;font:800 34px "Baloo 2";color:#14245c18}
+/* experiment slide */
+.exp-terra{position:absolute;left:10px;top:120px;width:640px;height:500px;transition:filter 1s}
+.exp-terra .iso-svg{width:100%;height:100%}
+.exp-terra.dark{filter:brightness(.55) saturate(.6)}
+.exp-terra.wilt .layer.sway use{animation:wilt 2s forwards!important;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes wilt{to{transform:rotate(14deg) scaleY(.75);filter:saturate(.2) sepia(.6)}}
+.exp-terra.noplants .layer.sway,.exp-terra.noplants .layer.grow[data-step="6"]{opacity:0!important;transform:scale(.1)!important}
+.exp-terra.flood .water-top{transform:scale(1.9);transform-box:fill-box;transform-origin:center;transition:transform 1.5s}
+.exp-terra.open .layer[data-step="8"]{transform:translate(120px,-60px) rotate(8deg)!important;transition:transform 1.2s}
+.exp-panel{position:absolute;right:40px;top:160px;width:560px}
+.scen{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.scen button{font:800 15px Nunito;border:0;border-radius:999px;padding:8px 14px;background:#fff;box-shadow:var(--shadow),inset 0 0 0 2px #14245c22;cursor:pointer;transition:.2s}
+.scen button.on{background:linear-gradient(135deg,#2ec4b6,#3a86ff);color:#fff;transform:translateY(-2px)}
+.gauge{display:grid;grid-template-columns:150px 1fr 46px;align-items:center;gap:10px;margin:7px 0;font:800 15px Nunito}
+.gauge .bar{height:18px;border-radius:12px;background:#14245c14;overflow:hidden;box-shadow:inset 0 0 0 2px #14245c14}
+.gauge .bar i{display:block;height:100%;width:50%;border-radius:12px;transition:width 1.4s cubic-bezier(.2,.8,.2,1),background .6s}
+.gauge b{text-align:right;color:var(--navy)}
+#expSay{margin-top:12px;min-height:110px}
+#expSay .wet{display:block;margin-top:8px;padding-top:8px;border-top:2px dashed #14245c22;color:#1e6b33}
 </style></head>
 <body>
 <!-- ===== shared drawings ===== -->
@@ -297,7 +344,7 @@ h2{font-size:52px;font-weight:800;letter-spacing:-.01em;text-shadow:0 3px 0 #fff
  <symbol id="heatS" viewBox="0 0 40 70"><g fill="none" stroke="#ff3d6e" stroke-width="4" stroke-linecap="round"><path d="M10 66 q-8 -12 0 -24 q8 -12 0 -24"/><path d="M28 66 q-8 -12 0 -24 q8 -12 0 -24"/></g></symbol>
 </defs></svg>
 
-<div class="viewport"><div class="stage" id="stage">
+<div class="viewport"><div class="stage" id="stage"><div class="clouds"><div class="cloud" style="top:50px;animation-duration:70s;animation-delay:-10s;transform:scale(1)"></div><div class="cloud" style="top:110px;animation-duration:90s;animation-delay:-50s;transform:scale(0.7)"></div><div class="cloud" style="top:30px;animation-duration:110s;animation-delay:-80s;transform:scale(0.8)"></div></div>
 
 <!-- 1 · TITLE -->
 <section class="slide" data-steps="1" data-name="Title">
@@ -427,6 +474,60 @@ h2{font-size:52px;font-weight:800;letter-spacing:-.01em;text-shadow:0 3px 0 #fff
     <div id="bCard" class="swap"><div class="bubble what"><h4 id="bWhatT">Step</h4><div id="bWhat"></div></div><div class="bubble why"><h4>Why it matters 🌎</h4><div id="bWhy"></div></div></div></div>
 </section>
 
+<!-- 7b · WHY A TERRARIUM IS IMPORTANT -->
+<section class="slide" data-steps="7" data-name="Why">
+  <div class="title"><h2>Why is a terrarium important?</h2><p class="sub">A small box that teaches big ideas about our wetland.</p></div>
+  <div class="imp">
+    <div class="bubble" data-s="1" style="--bar:linear-gradient(90deg,#2ec4b6,#3a86ff)"><span class="num">1</span>
+      <svg viewBox="0 0 300 100"><rect x="20" y="20" width="110" height="70" rx="8" fill="#d9f2ff" stroke="#5ab0e6" stroke-width="3"/><rect x="24" y="62" width="102" height="24" fill="#8a5a35"/><use href="#cattail" x="40" y="18" width="50" height="50"/><use href="#frog" x="80" y="50" width="34" height="28"/>
+        <path d="M140 55 h30" stroke="#14245c" stroke-width="4" stroke-linecap="round" marker-end="url(#ah)"/><defs><marker id="ah" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#14245c"/></marker></defs>
+        <rect x="180" y="60" width="110" height="34" rx="14" fill="#5ab4ea"/><use href="#cattail" x="176" y="4" width="70" height="66"/><use href="#reeds" x="232" y="14" width="60" height="56"/>
+        <g><animateTransform attributeName="transform" type="scale" values="1;1.04;1" dur="2s" repeatCount="indefinite" additive="sum"/></g></svg>
+      <h3>A model of our wetland</h3>It copies Santa María del Lago in a small space. We can <b>study</b> it every day without hurting the real wetland.</div>
+    <div class="bubble" data-s="2" style="--bar:linear-gradient(90deg,#ffd23f,#ff3d6e)"><span class="num">2</span>
+      <svg viewBox="0 0 300 100"><use href="#sun" x="4" y="4" width="60" height="60"/><path d="M60 40 L120 60" stroke="#ffcf33" stroke-width="5" stroke-dasharray="6 8" stroke-linecap="round"><animate attributeName="stroke-dashoffset" values="0;-28" dur=".8s" repeatCount="indefinite"/></path>
+        <use href="#plants" x="110" y="30" width="80" height="66"/><path d="M190 60 L230 60" stroke="#3fbf5f" stroke-width="5" stroke-dasharray="6 8" stroke-linecap="round"><animate attributeName="stroke-dashoffset" values="0;-28" dur=".8s" repeatCount="indefinite"/></path>
+        <use href="#frog" x="226" y="44" width="60" height="50"/><use href="#heatS" x="262" y="0" width="22" height="40"><animateTransform attributeName="transform" type="translate" values="0 8;0 -6;0 8" dur="1.6s" repeatCount="indefinite"/></use></svg>
+      <h3>We can see energy</h3><b>Light energy</b> goes in, becomes <b>chemical energy</b> in plants, moves to animals and leaves as <b>heat</b>.</div>
+    <div class="bubble" data-s="3" style="--bar:linear-gradient(90deg,#7cc8f2,#2f8fd8)"><span class="num">3</span>
+      <svg viewBox="0 0 300 100"><rect x="80" y="8" width="140" height="88" rx="10" fill="#e9f7ff" stroke="#5ab0e6" stroke-width="3"/><ellipse cx="150" cy="84" rx="40" ry="8" fill="#5ab4ea"/>
+        <g fill="none" stroke="#7cc8f2" stroke-width="3" stroke-linecap="round"><path d="M135 76 q-6 -10 0 -20 q6 -10 0 -20"><animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/></path><path d="M160 76 q-6 -10 0 -20 q6 -10 0 -20"><animate attributeName="opacity" values="0;1;0" dur="2s" begin=".7s" repeatCount="indefinite"/></path></g>
+        <g fill="#7cc8f2"><circle cx="92" cy="14" r="3.2"><animate attributeName="cy" values="14;14;80" keyTimes="0;.5;1" dur="2.4s" begin="0.0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.3;.9;1" dur="2.4s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="110" cy="14" r="3.2"><animate attributeName="cy" values="14;14;80" keyTimes="0;.5;1" dur="2.6999999999999997s" begin="0.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.3;.9;1" dur="2.6999999999999997s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="190" cy="14" r="3.2"><animate attributeName="cy" values="14;14;80" keyTimes="0;.5;1" dur="3.0s" begin="1.0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.3;.9;1" dur="3.0s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="206" cy="14" r="3.2"><animate attributeName="cy" values="14;14;80" keyTimes="0;.5;1" dur="3.3s" begin="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.3;.9;1" dur="3.3s" begin="1.5s" repeatCount="indefinite"/></circle></g><text x="10" y="40" font-family="Baloo 2" font-weight="800" font-size="15" fill="#2f8fd8">evaporates ↑</text><text x="228" y="40" font-family="Baloo 2" font-weight="800" font-size="15" fill="#2f8fd8">↓ drops</text></svg>
+      <h3>Water goes round</h3>Water goes up as vapor, makes drops on the glass and falls again. The same water is <b>used again and again</b>, like rain in the wetland.</div>
+    <div class="bubble" data-s="4" style="--bar:linear-gradient(90deg,#8a5a35,#5bb04a)"><span class="num">4</span>
+      <svg viewBox="0 0 300 100"><g transform="translate(150 52)"><circle r="38" fill="none" stroke="#14245c22" stroke-width="10"/><circle r="38" fill="none" stroke="#5bb04a" stroke-width="10" stroke-dasharray="60 180" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="4s" repeatCount="indefinite"/></circle></g>
+        <text x="150" y="12" text-anchor="middle" font-size="22">🍂</text><text x="200" y="62" text-anchor="middle" font-size="22">🐛</text><text x="150" y="100" text-anchor="middle" font-size="22">🟫</text><text x="100" y="62" text-anchor="middle" font-size="22">🌱</text></svg>
+      <h3>Nothing is wasted</h3>Dead leaves → tiny <b>decomposers</b> → nutrients in the <b>soil</b> → new plants. Matter is <b>recycled</b>.</div>
+    <div class="bubble" data-s="5" style="--bar:linear-gradient(90deg,#9b5de5,#3a86ff)"><span class="num">5</span>
+      <svg viewBox="0 0 300 100"><g stroke="#9b5de5" stroke-width="3" stroke-dasharray="4 5"><line x1="60" y1="50" x2="150" y2="24"/><line x1="150" y1="24" x2="240" y2="50"/><line x1="60" y1="50" x2="150" y2="80"/><line x1="150" y1="80" x2="240" y2="50"/><line x1="150" y1="24" x2="150" y2="80"/><animate attributeName="stroke-dashoffset" values="0;-18" dur="1s" repeatCount="indefinite"/></g>
+        <circle cx="60" cy="50" r="20" fill="#fff4bf" stroke="#f2b705" stroke-width="3"/><text x="60" y="57" text-anchor="middle" font-size="20">☀️</text><circle cx="150" cy="24" r="20" fill="#dff7d6" stroke="#2e9a48" stroke-width="3"/><text x="150" y="31" text-anchor="middle" font-size="20">🌿</text>
+        <circle cx="240" cy="50" r="20" fill="#e3f9e0" stroke="#43a047" stroke-width="3"/><text x="240" y="57" text-anchor="middle" font-size="20">🐸</text><circle cx="150" cy="80" r="18" fill="#d9efff" stroke="#3a86ff" stroke-width="3"/><text x="150" y="87" text-anchor="middle" font-size="18">💧</text></svg>
+      <h3>Everything is connected</h3>Light, water, soil, plants and animals depend on each other. If <b>one part changes</b>, everything changes.</div>
+    <div class="bubble" data-s="6" style="--bar:linear-gradient(90deg,#2e9a48,#ffd23f)"><span class="num">6</span>
+      <svg viewBox="0 0 300 100"><path d="M150 92 C110 70 70 50 90 24 C104 8 132 14 150 34 C168 14 196 8 210 24 C230 50 190 70 150 92Z" fill="#ff6b8b"><animateTransform attributeName="transform" type="scale" values="1;1.06;1" dur="1.2s" repeatCount="indefinite" additive="sum"/></path>
+        <use href="#dragonfly" x="20" y="10" width="70" height="60"/><use href="#hawk" x="214" y="4" width="84" height="60"/><text x="150" y="60" text-anchor="middle" font-size="20">🌎</text></svg>
+      <h3>It teaches us to care</h3>Wetlands <b>clean water</b>, stop floods and give a <b>home</b> to frogs, dragonflies and birds. Let's <b>protect</b> Santa María del Lago!</div>
+  </div>
+  <div class="bubble" data-s="7" style="position:absolute;left:220px;right:220px;bottom:60px;text-align:center;font-size:17px;padding:10px 18px">🔬 A terrarium is also an <b>experiment</b>: change one thing and see what happens. Let's try it! ▶</div>
+</section>
+
+<!-- 7c · EXPERIMENT -->
+<section class="slide" data-steps="1" data-name="Experiment">
+  <div class="title"><h2>What happens if…?</h2><p class="sub">Change one thing in the terrarium. Watch the energy, the water and the life.</p></div>
+  <div class="exp-terra" id="expTerra"></div>
+  <div class="exp-panel">
+    <div class="scen" id="scen"></div>
+    <div class="bubble" style="padding:12px 18px">
+      <div class="gauge"><span>☀️ Light energy in</span><div class="bar"><i id="gL"></i></div><b id="gLv"></b></div>
+      <div class="gauge"><span>🌿 Plant food</span><div class="bar"><i id="gP"></i></div><b id="gPv"></b></div>
+      <div class="gauge"><span>🐸 Animal energy</span><div class="bar"><i id="gA"></i></div><b id="gAv"></b></div>
+      <div class="gauge"><span>💧 Water inside</span><div class="bar"><i id="gW"></i></div><b id="gWv"></b></div>
+      <div class="gauge"><span>🔥 Heat out</span><div class="bar"><i id="gH"></i></div><b id="gHv"></b></div>
+    </div>
+    <div class="bubble" id="expSay"></div>
+  </div>
+</section>
+
 <!-- 8 · QUIZ -->
 <section class="slide" data-steps="1" data-name="Quiz">
   <div class="title"><h2>Quick quiz!</h2><p class="sub">Click the right answer.</p></div><div class="score" id="score">⭐ 0 / 4</div>
@@ -445,7 +546,7 @@ h2{font-size:52px;font-weight:800;letter-spacing:-.01em;text-shadow:0 3px 0 #fff
   <svg viewBox="0 0 1280 220" style="position:absolute;left:0;bottom:50px;width:100%;height:220px"><rect y="120" width="1280" height="100" fill="#58b2ea"/><use href="#cattail" x="20" y="0" width="180" height="180"/><use href="#frog" x="300" y="100" width="130" height="100"/><use href="#dragonfly" x="560" y="10" width="140" height="110"/><use href="#hawk" x="900" y="0" width="180" height="120"/><use href="#cattail" x="1100" y="0" width="180" height="180"/></svg>
 </section>
 
-<nav class="nav"><button class="ghost" id="prev">◀ Back</button><button id="next">Next ▶</button><span class="hint">or use ← → keys</span><div class="prog"><i id="prog"></i></div><span class="count" id="count">1 / 9</span><button class="ghost" id="fs">⛶</button></nav>
+<canvas id="fx"></canvas><nav class="nav"><button class="ghost" id="prev">◀ Back</button><button id="next">Next ▶</button><span class="hint">or use ← → keys</span><div class="prog"><i id="prog"></i></div><span class="count" id="count">1 / 9</span><button class="ghost" id="fs">⛶</button></nav>
 </div></div>
 
 <script>
@@ -567,6 +668,133 @@ QZ.forEach(([qq, opts, ok, fb]) => { const d = document.createElement("div"); d.
 function confetti() { const cols = ["#ffd23f", "#ff3d6e", "#2ec4b6", "#3a86ff", "#7b4fd6", "#5bb04a"]; for (let i = 0; i < 40; i++) { const c = document.createElement("i"); c.className = "confetti"; c.style.left = Math.random() * 1280 + "px"; c.style.background = cols[i % 6]; c.style.animationDelay = Math.random() * 0.4 + "s"; stage.append(c); setTimeout(() => c.remove(), 3000); } }
 
 const css = document.createElement("style"); css.textContent = "@keyframes fly{0%{transform:translate(-160px,0)}50%{transform:translate(700px,-60px)}100%{transform:translate(1450px,20px)}}@keyframes soar{50%{transform:translate(-80px,30px)}}"; document.head.append(css);
+
+// ===================== v2: particle engine =====================
+const fxc = document.getElementById("fx"), fg = fxc.getContext("2d");
+fxc.width = 1280 * 1.5; fxc.height = 720 * 1.5; fg.scale(1.5, 1.5);
+let PT = [];
+const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function emit(x, y, o = {}) { if (calm || PT.length > 900) return; PT.push({ x, y, vx: o.vx ?? 0, vy: o.vy ?? 0, life: o.life ?? 1.2, age: 0, r: o.r ?? 3, col: o.col ?? "#ffd23f", g: o.g ?? 0, drag: o.drag ?? 0.985, glow: o.glow ?? 8, wob: o.wob ?? 0, tx: o.tx, ty: o.ty, seek: o.seek ?? 0, shape: o.shape ?? "dot", ph: Math.random() * 6.28, spin: o.spin ?? 0 }); }
+function burstAt(x, y, col, n = 18, sp = 3) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = sp * (0.4 + Math.random()); emit(x, y, { vx: Math.cos(a) * v, vy: Math.sin(a) * v, col, r: 2 + Math.random() * 3, life: 0.6 + Math.random() * 0.6, drag: 0.93 }); } }
+function heatWisps(x, y, n = 6) { for (let i = 0; i < n; i++) setTimeout(() => emit(x + (Math.random() - 0.5) * 50, y, { vy: -1.2 - Math.random(), col: "#ff3d6e", r: 4 + Math.random() * 3, life: 1.8, wob: 1.2, shape: "wisp", drag: 1 }), i * 90); }
+let FRAME = [];
+function fxLoop(now) {
+  FRAME.forEach((f) => f(now));
+  fg.clearRect(0, 0, 1280, 720);
+  PT = PT.filter((p) => {
+    p.age += 1 / 60; if (p.age > p.life) return false;
+    if (p.seek && p.tx !== undefined) { p.vx += (p.tx - p.x) * p.seek; p.vy += (p.ty - p.y) * p.seek; }
+    p.vy += p.g; p.vx *= p.drag; p.vy *= p.drag; p.x += p.vx + Math.sin(p.age * 6 + p.ph) * p.wob; p.y += p.vy;
+    if (p.seek && p.tx !== undefined && Math.hypot(p.tx - p.x, p.ty - p.y) < 6) p.age = Math.max(p.age, p.life - 0.15);
+    const k = p.age / p.life, a = k < 0.15 ? k / 0.15 : 1 - (k - 0.15) / 0.85;
+    fg.globalAlpha = Math.max(0, a); fg.fillStyle = p.col; fg.strokeStyle = p.col; fg.shadowColor = p.col; fg.shadowBlur = p.glow;
+    if (p.shape === "wisp") { fg.lineWidth = p.r * 0.7; fg.lineCap = "round"; fg.beginPath(); for (let j = 0; j < 5; j++) fg.lineTo(p.x + Math.sin(p.age * 5 + j) * 5, p.y + j * 5); fg.stroke(); }
+    else if (p.shape === "star") { fg.save(); fg.translate(p.x, p.y); fg.rotate(p.age * 4); fg.beginPath(); for (let j = 0; j < 8; j++) { const rr = j % 2 ? p.r * 0.45 : p.r * 1.4; fg.lineTo(Math.cos(j * 0.785) * rr, Math.sin(j * 0.785) * rr); } fg.fill(); fg.restore(); }
+    else if (p.shape === "sq") { fg.save(); fg.translate(p.x, p.y); fg.rotate(p.ph + p.age * p.spin); fg.fillRect(-p.r, -p.r, p.r * 2, p.r * 2); fg.restore(); }
+    else { fg.beginPath(); fg.arc(p.x, p.y, p.r * (1 - k * 0.3), 0, 6.283); fg.fill(); }
+    return true;
+  });
+  fg.globalAlpha = 1; fg.shadowBlur = 0;
+  requestAnimationFrame(fxLoop);
+}
+requestAnimationFrame(fxLoop);
+const scaleNow = () => stage.getBoundingClientRect().width / 1280;
+function sp(el, fx = 0.5, fy = 0.5) { const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect(), k = scaleNow(); return { x: (r.left - s.left + r.width * fx) / k, y: (r.top - s.top + r.height * fy) / k, w: r.width / k, h: r.height / k }; }
+const active = (name) => slides[cur].dataset.name === name;
+// ambient pollen & light motes everywhere
+FRAME.push(() => { if (Math.random() < 0.12) emit(-10, 120 + Math.random() * 420, { vx: 0.6 + Math.random() * 0.8, vy: (Math.random() - 0.5) * 0.3, col: Math.random() < 0.5 ? "#fff6c2" : "#ffffff", r: 1.5 + Math.random() * 2, life: 14, wob: 0.4, glow: 10, drag: 1 }); });
+
+// ===================== energy path: orb with sparkle trail =====================
+travel = function (i) {
+  const n = document.getElementById("n" + i), A = i === 0 ? { x: 85, y: 175 } : (() => { const p = sp(document.querySelector(`#n${i - 1} svg`)); return { x: p.x, y: p.y }; })(), B = sp(n.querySelector("svg"));
+  const C = { x: (A.x + B.x) / 2, y: Math.min(A.y, B.y) - 140 }, t0 = performance.now(), dur = 1700;
+  const step = (now) => { const t = Math.min(1, (now - t0) / dur), e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    const x = (1 - e) ** 2 * A.x + 2 * (1 - e) * e * C.x + e * e * B.x, y = (1 - e) ** 2 * A.y + 2 * (1 - e) * e * C.y + e * e * B.y;
+    emit(x, y, { r: 9, col: "#ffd23f", life: 0.25, glow: 26 });
+    for (let j = 0; j < 3; j++) emit(x, y, { vx: (Math.random() - 0.5) * 1.6, vy: (Math.random() - 0.5) * 1.6 + 0.5, r: 1.5 + Math.random() * 2.5, col: j ? "#ffe27a" : "#ff9f1c", life: 0.7 + Math.random() * 0.5, shape: j === 1 ? "star" : "dot" });
+    if (t < 1) requestAnimationFrame(step);
+    else { burstAt(B.x, B.y, "#ffd23f", 30, 4); n.classList.remove("got"); void n.offsetWidth; n.classList.add("got"); countUp(n.querySelector(".units"), UNITS[i]); setTimeout(() => heatWisps(B.x, B.y - 60, 8), 300); } };
+  requestAnimationFrame(step);
+};
+document.querySelectorAll(".node").forEach((n) => { const r = document.createElement("i"); r.className = "ring"; n.append(r); });
+function countUp(el, to) { const t0 = performance.now(); const f = (now) => { const t = Math.min(1, (now - t0) / 900); el.textContent = Math.round(to * (1 - Math.pow(1 - t, 3))).toLocaleString("en") + " units"; if (t < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); }
+const oldPath = HOOK["Energy path"];
+HOOK["Energy path"] = (s) => { oldPath(s);
+  if (s >= 1) document.querySelectorAll(".node .units").forEach((u, i) => { if (i < s && i !== s - 1) u.textContent = UNITS[i].toLocaleString("en") + " units"; });
+  if (s === 5) { document.getElementById("pathSay").innerHTML = `<svg class="donut" width="90" height="90" viewBox="0 0 42 42"><circle cx="21" cy="21" r="15.9" fill="none" stroke="#ffd2dc" stroke-width="7"/><circle id="dn" cx="21" cy="21" r="15.9" fill="none" stroke="#ff3d6e" stroke-width="7" stroke-dasharray="0 100" transform="rotate(-90 21 21)"/><text x="21" y="24" text-anchor="middle" font-size="8" font-weight="800" fill="#14245c">90%</text></svg>` + SAY[4];
+    requestAnimationFrame(() => setTimeout(() => document.getElementById("dn").setAttribute("stroke-dasharray", "90 10"), 60));
+    document.querySelectorAll(".node svg").forEach((v, i) => setTimeout(() => { const p = sp(v); heatWisps(p.x, p.y - 40, 14); }, i * 350)); }
+  if (s === 6) document.querySelectorAll(".node svg").forEach((v) => { const p = sp(v, 0.5, 1); for (let j = 0; j < 14; j++) emit(p.x + (Math.random() - 0.5) * 120, p.y, { vy: 0.6 + Math.random(), vx: (Math.random() - 0.5) * 0.5, col: "#8a5a35", r: 2 + Math.random() * 2, life: 1.6, shape: "sq", spin: 3 }); });
+};
+
+// ===================== terrarium build effects =====================
+const LOOK = { 2: ["#b3ab9e", "#8f877a", "#e2dbcf"], 3: ["#2e2e35", "#55555e"], 4: ["#69401f", "#a87a50", "#3d2410"], 5: ["#7fd3ff", "#2f8fd8", "#ffffff"] };
+let lastBuild = 0;
+const oldBuild = HOOK.Build;
+HOOK.Build = (s) => { oldBuild(s);
+  terra.querySelectorAll(".layer.grow").forEach((l, i) => l.style.transitionDelay = (s === 6 && +l.dataset.step === 6 ? i * 70 : 0) + "ms");
+  if (s > lastBuild) buildFx(terra, s);
+  lastBuild = s;
+};
+function buildFx(root, s) {
+  const tank = root.querySelector('.layer[data-name="soil"]') || root;
+  const T = sp(root.querySelector(".glass-back") ? root.querySelectorAll(".glass-front")[0] : root);
+  const mid = sp(tank);
+  if (s === 1) { const g = sp(root.querySelector(".glass-edge")); for (let i = 0; i < 40; i++) setTimeout(() => emit(T.x - T.w / 2 + Math.random() * T.w * 1.6, T.y - T.h / 2 + Math.random() * T.h, { col: "#ffffff", r: 2 + Math.random() * 2, life: 0.9, shape: "star", glow: 14 }), i * 25); }
+  if (LOOK[s]) {
+    const cols = LOOK[s], tgt = s === 5 ? sp(root.querySelector(".water-top")) : mid, x0 = tgt.x, top = T.y - T.h * 0.9;
+    const t0 = performance.now(), pour = () => { const t = performance.now() - t0; for (let j = 0; j < 4; j++) emit(x0 + (Math.random() - 0.5) * (s === 5 ? 10 : 26), top, { vy: 4 + Math.random() * 2, g: 0.35, col: cols[j % cols.length], r: s === 5 ? 2.4 : 2 + Math.random() * 2, life: (tgt.y - top) / 9 / 60 + 0.25, shape: s === 5 ? "dot" : "sq", spin: 4, glow: s === 5 ? 6 : 0, drag: 1 }); if (t < 900) requestAnimationFrame(pour); };
+    pour();
+    setTimeout(() => { for (let j = 0; j < 26; j++) { const a = Math.PI + Math.random() * Math.PI; emit(tgt.x + (Math.random() - 0.5) * tgt.w * 0.6, tgt.y, { vx: Math.cos(a) * 3, vy: Math.sin(a) * 2, g: 0.12, col: cols[j % cols.length], r: 2 + Math.random() * 2.5, life: 0.8, shape: s === 5 ? "dot" : "sq", glow: 0 }); } }, 1000);
+  }
+  if (s === 6) root.querySelectorAll('.layer.sway use').forEach((u, i) => setTimeout(() => { const p = sp(u, 0.5, 0.4); for (let j = 0; j < 6; j++) emit(p.x, p.y, { vx: (Math.random() - 0.5) * 2, vy: -Math.random() * 2, col: j % 2 ? "#7cc84a" : "#c8f59a", r: 2 + Math.random() * 2, life: 0.9, shape: "star" }); }, 200 + i * 70));
+  if (s === 7) root.querySelectorAll('.layer[data-step="7"] use').forEach((u, i) => setTimeout(() => { const p = sp(u); burstAt(p.x, p.y, "#ffb3cf", 14, 2.5); }, 500 + i * 200));
+  if (s === 8) { const g = root.querySelector(".lamp-glow"); setTimeout(() => { const p = sp(g); burstAt(p.x, p.y, "#fff3b0", 30, 3); }, 1000); }
+  if (s === 9) { const g = root.querySelector(".lamp-glow"); g.classList.remove("lampOn"); void g.getBBox(); g.classList.add("lampOn"); }
+}
+// running terrarium: energy flows as particles (lamp → plants → animals → heat out, water vapor)
+function runFlows(root, rate) {
+  const lamp = sp(root.querySelector(".lamp-glow")), plants = [...root.querySelectorAll(".layer.sway use")], pond = sp(root.querySelector(".water-top"));
+  const animals = [...root.querySelectorAll(".layer[data-step='7'] use")], lid = sp(root.querySelectorAll(".glass-front")[0]);
+  if (rate.light && plants.length && Math.random() < 0.5 * rate.light) { const p = sp(plants[Math.floor(Math.random() * plants.length)], 0.5, 0.3); emit(lamp.x + (Math.random() - 0.5) * 20, lamp.y + 6, { tx: p.x, ty: p.y, seek: 0.004, vy: 2, col: "#ffd23f", r: 2.6, life: 2.2, glow: 14 }); }
+  if (rate.food && animals.length && plants.length && Math.random() < 0.18 * rate.food) { const a = sp(animals[Math.floor(Math.random() * animals.length)]), p = sp(plants[Math.floor(Math.random() * plants.length)], 0.5, 0.6); emit(p.x, p.y, { tx: a.x, ty: a.y, seek: 0.003, col: "#3fbf5f", r: 3, life: 2.6, glow: 10, shape: "star" }); }
+  if (rate.heat && Math.random() < 0.16 * rate.heat) { const src = Math.random() < 0.6 && animals.length ? sp(animals[Math.floor(Math.random() * animals.length)]) : { x: lid.x + (Math.random() - 0.5) * lid.w, y: lid.y - lid.h * 0.45 }; emit(src.x, src.y - 10, { vy: -1.3, col: "#ff3d6e", r: 4, life: 2.2, wob: 1, shape: "wisp", drag: 1 }); }
+  if (rate.water && Math.random() < 0.2 * rate.water) emit(pond.x + (Math.random() - 0.5) * pond.w * 0.6, pond.y, { vy: -0.8 - Math.random() * 0.6, col: "#9be0ff", r: 2.5, life: 2.4, wob: 0.6, glow: 4, drag: 1 });
+}
+FRAME.push(() => { if (active("Build") && step >= 9) runFlows(terra, { light: 1, food: 1, heat: 1, water: 1 }); });
+
+// ===================== why slide: drops on the water-cycle card =====================
+// (drops are inline SVG; nothing else needed)
+HOOK.Why = (s) => { const b = slides[cur].querySelector(`[data-s="${s}"]`); if (b && s <= 6) setTimeout(() => { const p = sp(b, 0.5, 0.25); burstAt(p.x, p.y, ["#3a86ff", "#ff9f1c", "#2f8fd8", "#5bb04a", "#9b5de5", "#ff6b8b"][s - 1], 26, 3.5); }, 300); };
+
+// ===================== experiment slide =====================
+const expT = document.getElementById("expTerra");
+expT.append(terra.querySelector("svg").cloneNode(true));
+expT.querySelectorAll(".layer").forEach((l) => l.classList.add("in"));
+expT.classList.add("terra", "running"); expT.style.position = "absolute";
+const SCN = {
+  normal: ["☀️ Normal", { L: 100, P: 80, A: 70, W: 85, H: 70 }, { light: 1, food: 1, heat: 1, water: 1 }, "", "Everything works. <b>Light energy</b> goes in, plants make <b>chemical energy</b>, animals use it and <b>heat</b> goes out. Water goes round and round.", "The real wetland works the same way when it is healthy."],
+  dark: ["🌑 Lamp off", { L: 0, P: 15, A: 25, W: 85, H: 20 }, { light: 0, food: 0.15, heat: 0.4, water: 0.3 }, "dark", "No light = <b>no new energy</b>. Plants cannot make food, so the animals slowly have <b>less energy</b>.", "In the wetland, without the Sun nothing could live. The Sun is the start of all the energy."],
+  open: ["💨 Lid open", { L: 100, P: 55, A: 55, W: 25, H: 80 }, { light: 1, food: 0.6, heat: 1.2, water: 1.8 }, "open", "Water vapor <b>escapes</b>. There are no drops on the glass, the soil dries and the plants get weak.", "If people <b>drain or fill</b> the wetland, water is lost and frogs and dragonflies lose their home."],
+  flood: ["🌊 Too much water", { L: 90, P: 35, A: 40, W: 100, H: 60 }, { light: 0.9, food: 0.4, heat: 0.8, water: 1.3 }, "flood wilt", "Roots get <b>no air</b> and start to rot. Plants make less food, so less energy moves to the animals.", "Balance is important. Healthy wetlands control water and stop floods."],
+  noplants: ["🚫 No plants", { L: 100, P: 0, A: 5, W: 70, H: 30 }, { light: 0, food: 0, heat: 0.5, water: 0.6 }, "noplants", "Light comes in, but <b>nobody catches it</b>. No chemical energy is made, so the animals have <b>no food</b>.", "If we cut the rushes and cattails, the energy path breaks. <b>Plants are the door for energy.</b>"],
+};
+let scen = "normal";
+for (const key in SCN) { const b = document.createElement("button"); b.textContent = SCN[key][0]; b.onclick = () => setScen(key); b.dataset.k = key; document.getElementById("scen").append(b); }
+function setScen(key) { scen = key; const [, g, , cls, say, wet] = SCN[key];
+  document.querySelectorAll("#scen button").forEach((b) => b.classList.toggle("on", b.dataset.k === key));
+  expT.className = "exp-terra terra " + (key === "dark" ? "" : "running ") + cls;
+  const colors = { L: "#ffc93c", P: "#3fbf5f", A: "#43a047", W: "#3a86ff", H: "#ff3d6e" };
+  for (const k in g) { const i = document.getElementById("g" + k); i.style.width = g[k] + "%"; i.style.background = g[k] < 30 ? "#ff3d6e" : colors[k]; document.getElementById("g" + k + "v").textContent = g[k] + "%"; }
+  document.getElementById("expSay").innerHTML = say + `<span class="wet">🏞️ <b>In the wetland:</b> ${wet}</span>`;
+  const c = sp(expT); burstAt(c.x, c.y - 60, "#ffffff", 20, 3);
+}
+FRAME.push(() => { if (active("Experiment")) runFlows(expT, SCN[scen][2]); });
+HOOK.Experiment = () => setScen(scen);
+
+// ===================== remember slide addition =====================
+HOOK.Remember = (s) => { if (s === 4) confetti(); };
+
 step = 1; show();
 </script>
 </body></html>
